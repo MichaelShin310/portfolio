@@ -47,7 +47,7 @@
   // Some browsers fire loadedmetadata before this script attaches.
   if (media.readyState >= 1) { duration = media.duration || 0; }
 
-  var SCRUB_END = 0.78;   // portion of the track that plays the orbit
+  var SCRUB_END = 0.9;    // portion of the track that plays the film
   var lastTime = -1;
   var ticking = false;
 
@@ -58,7 +58,7 @@
     if (total <= 0) return;
     var p = Math.min(1, Math.max(0, -rect.top / total));
 
-    // Scrub the video through the first part of the scroll.
+    // Scrub the film through the first part of the scroll.
     if (duration > 0) {
       var t = Math.min(p / SCRUB_END, 1) * duration * 0.999;
       if (Math.abs(t - lastTime) > 0.02) {
@@ -67,11 +67,10 @@
       }
     }
 
-    // Exit: shrink and fade after the orbit completes.
+    // Exit: the film already ends inside the black of the lens, so the
+    // handoff is a pure fade into the identical page black. No movement.
     var exit = Math.min(1, Math.max(0, (p - SCRUB_END) / (1 - SCRUB_END)));
-    var eased = exit * exit * (3 - 2 * exit); // smoothstep
-    media.style.transform = "scale(" + (1 - 0.45 * eased) + ")";
-    media.style.opacity = String(1 - eased);
+    media.style.opacity = String(1 - exit);
 
     // The caption fades out as soon as scrolling starts.
     copy.style.opacity = String(Math.max(0, 1 - p * 4));
