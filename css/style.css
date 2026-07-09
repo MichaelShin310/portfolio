@@ -126,7 +126,12 @@ img { max-width: 100%; display: block; }
 .cine {
   position: relative;
   height: 320vh;
+  padding: 0;               /* override the global section padding */
   background: var(--paper);
+  /* Pull the film up under the sticky header (4rem + 1px border) so it is
+     full-bleed from the first frame — the header floats over it instead of
+     leaving a dark bar above it. */
+  margin-top: calc(-4rem - 1px);
 }
 
 .cine-sticky {
