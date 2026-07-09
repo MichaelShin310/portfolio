@@ -1,0 +1,763 @@
+/* ================================================================
+   MICHAEL SHIN — PORTFOLIO
+   Design concept: "Drafting Table"
+   Paper, ink, one signal-orange accent. Grid discipline, big type.
+   ================================================================ */
+
+:root {
+  --paper: #f6f5f1;
+  --ink: #111110;
+  --accent: #ff4d00;
+  --line: rgba(17, 17, 16, 0.18);
+  --line-strong: rgba(17, 17, 16, 0.55);
+  --sans: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --pad: clamp(1.25rem, 4vw, 4rem);
+  --max: 1440px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--accent); color: var(--paper); }
+
+a { color: inherit; text-decoration: none; }
+
+img { max-width: 100%; display: block; }
+
+.wrap {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding-left: var(--pad);
+  padding-right: var(--pad);
+}
+
+/* ---------------- Typography helpers ---------------- */
+
+.label {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.75;
+}
+
+.acc { color: var(--accent); }
+
+/* Editable placeholder marker — flags [content you still need to fill] */
+.todo {
+  background: rgba(255, 77, 0, 0.14);
+  border-radius: 2px;
+  padding: 0 0.2em;
+}
+
+/* ---------------- Header / nav ---------------- */
+
+.site-head {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(246, 245, 241, 0.96);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+
+.site-head .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 4rem;
+}
+
+.wordmark {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: 1.05rem;
+}
+
+.wordmark:hover { color: var(--accent); }
+
+.site-nav {
+  display: flex;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.site-nav a { position: relative; padding: 0.25rem 0; }
+
+.site-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 100%; height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+
+.site-nav a:hover::after,
+.site-nav a[aria-current="page"]::after { transform: scaleX(1); }
+
+/* ---------------- Hero ---------------- */
+
+.hero {
+  padding-top: clamp(4rem, 10vw, 8.5rem);
+  padding-bottom: clamp(3rem, 6vw, 5rem);
+}
+
+.hero .label { margin-bottom: 1.5rem; }
+
+.hero h1 {
+  font-size: clamp(2.75rem, 8.5vw, 7.5rem);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  max-width: 18ch;
+}
+
+.hero .lede {
+  margin-top: 2rem;
+  max-width: 56ch;
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  line-height: 1.6;
+}
+
+.hero-ctas { margin-top: 2.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+
+.btn {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid var(--ink);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn:hover { background: var(--ink); color: var(--paper); }
+
+.btn.solid { background: var(--ink); color: var(--paper); }
+
+.btn.solid:hover { background: var(--accent); border-color: var(--accent); }
+
+/* ---------------- Sub-hero status strip ---------------- */
+
+.status-strip {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 0.9rem 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  line-height: 1.8;
+}
+
+/* ---------------- Section scaffolding ---------------- */
+
+section { padding: clamp(3.5rem, 8vw, 7rem) 0; }
+
+.sec-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-bottom: clamp(2rem, 4vw, 3.5rem);
+}
+
+.sec-head h2 {
+  font-size: clamp(1.8rem, 4vw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.sec-intro { max-width: 60ch; font-size: 1.15rem; margin-bottom: clamp(2rem, 4vw, 3.5rem); }
+
+/* ---------------- Work grid (homepage) ---------------- */
+
+.work-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.5rem, 3vw, 3rem);
+}
+
+.card { display: block; }
+
+.card .ph { transition: transform 0.35s ease; }
+
+.card:hover .ph { transform: translateY(-4px); }
+
+.card-meta { margin-top: 1rem; }
+
+.card-meta .label { display: block; margin-bottom: 0.4rem; }
+
+.card-meta h3 {
+  font-size: clamp(1.3rem, 2.4vw, 1.9rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  transition: color 0.2s ease;
+}
+
+.card:hover h3 { color: var(--accent); }
+
+.card-meta p { margin-top: 0.35rem; opacity: 0.8; max-width: 44ch; }
+
+/* Featured full-width card (leads the work grid) */
+.card-wide { grid-column: 1 / -1; }
+
+/* ---------------- Architecture index (accordion) ----------------
+   One project open at a time; clicking a row opens it and closes
+   the rest. Fish Market is open on load.                          */
+
+.arch-item { border-top: 1px solid var(--line); }
+
+.arch-item:last-of-type { border-bottom: 1px solid var(--line); }
+
+.arch-head { margin: 0; }
+
+.arch-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 3.5rem 1fr auto;
+  align-items: baseline;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  padding: clamp(1.4rem, 3vw, 2rem) 0;
+}
+
+.arch-num {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+}
+
+.arch-title {
+  display: block;
+  font-size: clamp(1.35rem, 2.5vw, 2rem);
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  transition: color 0.2s ease;
+}
+
+.arch-toggle:hover .arch-title { color: var(--accent); }
+
+.arch-meta {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-top: 0.55rem;
+}
+
+.arch-icon {
+  font-family: var(--mono);
+  font-size: 1.35rem;
+  font-weight: 400;
+  color: var(--accent);
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+
+.arch-item.open .arch-icon { transform: rotate(45deg); }
+
+.arch-body { display: none; padding: 0.25rem 0 clamp(2.25rem, 4vw, 3.25rem); }
+
+.arch-item.open .arch-body { display: block; }
+
+.arch-body > p { max-width: 62ch; opacity: 0.9; margin-bottom: clamp(1.5rem, 3vw, 2rem); }
+
+.arch-body .ws-media { margin-top: 1.25rem; }
+
+/* Coursework archive strip */
+.arch-courses {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-left: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+}
+
+.arch-courses > div {
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 1.5rem 1.25rem 2rem;
+}
+
+.arch-courses .label { display: block; margin-bottom: 1rem; color: var(--accent); opacity: 1; }
+
+.arch-courses h3 { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; }
+
+.arch-courses p { margin-top: 0.4rem; font-size: 0.85rem; opacity: 0.7; }
+
+/* ---------------- Award callout ---------------- */
+
+.award {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: clamp(1.5rem, 3.5vw, 3.5rem);
+  align-items: end;
+  margin-bottom: clamp(3rem, 6vw, 5rem);
+}
+
+.award-panel { border-top: 3px solid var(--accent); padding-top: 1.5rem; }
+
+.award-panel .label { display: block; color: var(--accent); opacity: 1; margin-bottom: 0.9rem; }
+
+.award-panel h2 {
+  font-size: clamp(1.6rem, 3.2vw, 2.6rem);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.award-panel .award-org {
+  margin-top: 1rem;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.award-panel .award-note { margin-top: 1rem; font-size: 0.9rem; opacity: 0.7; }
+
+/* ---------------- Image placeholder ("drafting frame") ----------------
+   Swap each .ph for a real <img> when assets are ready.               */
+
+.ph {
+  position: relative;
+  aspect-ratio: var(--ar, 16 / 10);
+  border: 1px solid var(--line-strong);
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0 14px,
+      rgba(17, 17, 16, 0.05) 14px 15px
+    );
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.ph > span {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 0.5rem 0.9rem;
+  text-align: center;
+  max-width: 80%;
+}
+
+/* corner ticks */
+.ph::before,
+.ph::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  width: 14px; height: 14px;
+  border-color: var(--accent);
+  border-style: solid;
+}
+
+.ph::before { top: 8px; left: 8px; border-width: 1px 0 0 1px; }
+.ph::after { bottom: 8px; right: 8px; border-width: 0 1px 1px 0; }
+
+/* Real image inside a drafting frame: keep the border and corner ticks,
+   drop the hatch fill and placeholder label. */
+.ph.has-img { background: none; }
+
+.ph.has-img img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Full presentation sheets: show the whole board, no cropping. When the
+   frame --ar matches the image ratio (the norm here), contain fits exactly
+   with no letterbox. */
+.ph.has-img.contain img {
+  object-fit: contain;
+  background: var(--paper);
+}
+
+.ph-caption {
+  margin-top: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+/* A captioned image block (figure + caption) that sits in a media grid. */
+.media-item { min-width: 0; }
+.media-item .ph { width: 100%; }
+
+/* Tall portrait presentation boards: constrain to a readable centered
+   column so a full sheet doesn't dominate the page. */
+.board {
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.board.wide { max-width: 720px; }
+
+/* Three- and four-up media rows. */
+.ws-media.three { grid-template-columns: repeat(3, 1fr); }
+.ws-media.four { grid-template-columns: repeat(4, 1fr); }
+
+/* Video in a drafting frame (autoplaying UI loop). */
+.ph.has-img video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Booklet: full-width landscape spreads stacked in reading order. */
+.booklet { margin-top: 1.5rem; }
+.booklet .ph { margin-bottom: 1.1rem; }
+.booklet .ph:last-child { margin-bottom: 0; }
+
+/* ---------------- Capabilities strip ---------------- */
+
+.caps { border-top: 1px solid var(--line); }
+
+.caps-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border-left: 1px solid var(--line);
+}
+
+.cap {
+  border-right: 1px solid var(--line);
+  padding: 1.75rem 1.25rem 2.5rem;
+}
+
+.cap .label { display: block; margin-bottom: 1.25rem; color: var(--accent); opacity: 1; }
+
+.cap h3 { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; }
+
+.cap p { margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.75; }
+
+/* ---------------- Closer ---------------- */
+
+.closer h2 {
+  font-size: clamp(1.9rem, 4.5vw, 3.75rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+  max-width: 24ch;
+}
+
+.closer p { margin-top: 1.5rem; font-size: 1.15rem; max-width: 50ch; }
+
+/* ---------------- Case study pages ---------------- */
+
+.case-hero { padding-top: clamp(3.5rem, 8vw, 6.5rem); }
+
+.case-hero .label { margin-bottom: 1.25rem; }
+
+.case-hero h1 {
+  font-size: clamp(2.2rem, 5.5vw, 4.75rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  max-width: 24ch;
+}
+
+.case-hero .ph { margin-top: clamp(2rem, 5vw, 3.5rem); }
+
+/* Snapshot bar */
+.snapshot {
+  margin-top: clamp(2rem, 4vw, 3rem);
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.snapshot > div {
+  padding: 1.1rem 1rem 1.3rem 0;
+  border-right: 1px solid var(--line);
+  margin-right: 1rem;
+}
+
+.snapshot > div:last-child { border-right: none; margin-right: 0; }
+
+.snapshot .label { display: block; margin-bottom: 0.5rem; color: var(--accent); opacity: 1; }
+
+.snapshot p { font-size: 0.92rem; line-height: 1.4; }
+
+/* Numbered case sections */
+.case-sec { padding-top: clamp(2.75rem, 6vw, 5rem); }
+
+.case-sec:last-of-type { padding-bottom: clamp(3rem, 6vw, 5rem); }
+
+.case-sec .sec-num {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.9rem;
+}
+
+.case-sec h2 {
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-bottom: 1.25rem;
+}
+
+.case-sec .prose { max-width: 66ch; }
+
+.case-sec .prose p + p { margin-top: 1rem; }
+
+.case-sec .prose strong { font-weight: 700; }
+
+/* Workstream blocks inside "The work" */
+.workstream { margin-top: clamp(2.5rem, 5vw, 4rem); }
+
+.workstream h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-bottom: 0.5rem;
+}
+
+.workstream > p { max-width: 62ch; opacity: 0.9; margin-bottom: 1.5rem; }
+
+.ws-media {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.ws-media.single { grid-template-columns: 1fr; }
+
+/* Killed direction callout */
+.killed {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  border-left: 3px solid var(--accent);
+  padding: 1.25rem 0 1.25rem 1.75rem;
+  max-width: 62ch;
+}
+
+.killed .label { display: block; margin-bottom: 0.6rem; color: var(--accent); opacity: 1; }
+
+/* Results stats */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.stat { border-top: 1px solid var(--ink); padding-top: 1rem; }
+
+.stat .big {
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.stat p { margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8; }
+
+/* Next project link */
+.next-proj {
+  border-top: 1px solid var(--line);
+  padding: clamp(2.5rem, 5vw, 4rem) 0;
+}
+
+.next-proj a {
+  display: block;
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  transition: color 0.2s ease;
+}
+
+.next-proj a:hover { color: var(--accent); }
+
+.next-proj .label { display: block; margin-bottom: 0.75rem; }
+
+/* ---------------- Photography page ---------------- */
+
+.photo-grid {
+  columns: 3;
+  column-gap: 1.25rem;
+}
+
+.photo-grid .ph {
+  margin-bottom: 1.25rem;
+  break-inside: avoid;
+}
+
+/* ---------------- About page ---------------- */
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: start;
+}
+
+.about-grid h1 {
+  font-size: clamp(2.1rem, 5vw, 4rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin-bottom: 1.75rem;
+}
+
+.about-grid .prose p + p { margin-top: 1.1rem; }
+
+.about-links { margin-top: 2rem; display: flex; gap: 1.5rem; flex-wrap: wrap; }
+
+.about-links a {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 2px;
+}
+
+.about-links a:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ---------------- Footer / contact ---------------- */
+
+.site-foot {
+  background: var(--ink);
+  color: var(--paper);
+  padding: clamp(4rem, 8vw, 7rem) 0 3rem;
+}
+
+.site-foot .label { color: var(--paper); opacity: 0.6; }
+
+.site-foot h2 {
+  font-size: clamp(2.4rem, 6.5vw, 5.5rem);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-top: 1.25rem;
+}
+
+.foot-copy { margin-top: 1.75rem; max-width: 52ch; opacity: 0.85; font-size: 1.1rem; }
+
+.foot-mail {
+  display: inline-block;
+  margin-top: 2.25rem;
+  font-size: clamp(1.2rem, 2.6vw, 1.9rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 3px;
+  transition: color 0.2s ease;
+}
+
+.foot-mail:hover { color: var(--accent); }
+
+.foot-links {
+  margin-top: 2.5rem;
+  display: flex;
+  gap: 1.75rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.foot-links a { opacity: 0.7; }
+
+.foot-links a:hover { opacity: 1; color: var(--accent); }
+
+.foot-note {
+  margin-top: 3.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(246, 245, 241, 0.2);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ---------------- Reveal animation ---------------- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* ---------------- Responsive ---------------- */
+
+@media (max-width: 900px) {
+  .work-grid { grid-template-columns: 1fr; }
+  .caps-row { grid-template-columns: 1fr; border-left: none; }
+  .cap { border-right: none; border-bottom: 1px solid var(--line); padding-left: 0; }
+  .snapshot { grid-template-columns: 1fr 1fr; }
+  .snapshot > div { border-right: none; }
+  .arch-toggle { grid-template-columns: 2.5rem 1fr auto; }
+  .arch-courses { grid-template-columns: 1fr 1fr; }
+  .award { grid-template-columns: 1fr; }
+  .ws-media,
+  .ws-media.three { grid-template-columns: 1fr; }
+  .ws-media.four { grid-template-columns: repeat(2, 1fr); }
+  .stats { grid-template-columns: 1fr; }
+  .photo-grid { columns: 2; }
+  .about-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .photo-grid { columns: 1; }
+  .site-nav { gap: 1rem; font-size: 0.68rem; }
+}

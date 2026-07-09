@@ -1,0 +1,17 @@
+# Design source files — not used by the live site, just raw working files
+*.ai
+*.psd
+*.3dm
+*.3dmbak
+*.pdf
+*.tif
+*.tiff
+*.fla
+
+# Unused raw screen recording (not referenced by any page)
+img/utern/ScreenRecording*.mp4
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+desktop.ini
