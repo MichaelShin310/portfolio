@@ -25,6 +25,71 @@
   document.addEventListener("visibilitychange", sweep);
 })();
 
+// Cinematic scroll opener: scroll position scrubs the orbit video while the
+// frame stays pinned, then the visual shrinks and fades into the page.
+// The first 78% of the track drives the orbit; the last 22% is the exit.
+(function () {
+  var cine = document.getElementById("cine");
+  if (!cine) return;
+
+  var media = cine.querySelector(".cine-media");
+  var copy = cine.querySelector(".cine-copy");
+
+  // Reduced motion: no scrub, no pin theatrics — just show the poster once.
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+
+  var duration = 0;
+  media.addEventListener("loadedmetadata", function () {
+    duration = media.duration || 0;
+  });
+  // Some browsers fire loadedmetadata before this script attaches.
+  if (media.readyState >= 1) { duration = media.duration || 0; }
+
+  var SCRUB_END = 0.78;   // portion of the track that plays the orbit
+  var lastTime = -1;
+  var ticking = false;
+
+  function update() {
+    ticking = false;
+    var rect = cine.getBoundingClientRect();
+    var total = rect.height - window.innerHeight;
+    if (total <= 0) return;
+    var p = Math.min(1, Math.max(0, -rect.top / total));
+
+    // Scrub the video through the first part of the scroll.
+    if (duration > 0) {
+      var t = Math.min(p / SCRUB_END, 1) * duration * 0.999;
+      if (Math.abs(t - lastTime) > 0.02) {
+        media.currentTime = t;
+        lastTime = t;
+      }
+    }
+
+    // Exit: shrink and fade after the orbit completes.
+    var exit = Math.min(1, Math.max(0, (p - SCRUB_END) / (1 - SCRUB_END)));
+    var eased = exit * exit * (3 - 2 * exit); // smoothstep
+    media.style.transform = "scale(" + (1 - 0.45 * eased) + ")";
+    media.style.opacity = String(1 - eased);
+
+    // The caption fades out as soon as scrolling starts.
+    copy.style.opacity = String(Math.max(0, 1 - p * 4));
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  }
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+  media.addEventListener("loadedmetadata", onScroll);
+  update();
+})();
+
 // Architecture accordion: one project open at a time. Opening a project
 // closes whichever is currently open.
 (function () {
