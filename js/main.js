@@ -109,9 +109,29 @@
       items.forEach(function (other) { setOpen(other, false); });
       if (!wasOpen) {
         setOpen(item, true);
-        // Keep the opened row in view when a taller row above it collapses.
-        item.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        // Land at the top of the newly opened project, just below the sticky
+        // header — not wherever the previous scroll position happened to be.
+        var head = document.querySelector(".site-head");
+        var offset = (head ? head.getBoundingClientRect().height : 0) + 24;
+        var y = item.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: y, behavior: "smooth" });
       }
     });
   });
+})();
+
+// Titleblock: fade out when the footer/colophon is in view so the fixed
+// sheet annotation never sits on top of the contact block.
+(function () {
+  var tb = document.querySelector(".titleblock");
+  var foot = document.querySelector(".site-foot");
+  if (!tb || !foot) return;
+  function check() {
+    var r = foot.getBoundingClientRect();
+    var overlap = r.top < window.innerHeight - 40;
+    tb.style.opacity = overlap ? "0" : "";
+  }
+  window.addEventListener("scroll", check, { passive: true });
+  window.addEventListener("resize", check);
+  check();
 })();
