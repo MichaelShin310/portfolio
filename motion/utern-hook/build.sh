@@ -47,17 +47,20 @@ node capture.js all frames
 
 echo "==> encoding"
 if [ -n "$AUDIO" ]; then
+  # The music ends on its own at ~9.2s. Everything after that in the source clip
+  # belongs to the reference video's own outro sting, so it gets trimmed off and
+  # the logo card plays out silent.
   "$FFMPEG" -y -hide_banner -loglevel error \
     -framerate 30 -i frames/f%05d.png -i "$AUDIO" \
-    -filter_complex "[1:a]afade=t=out:st=11.45:d=0.45,apad[a]" \
-    -map 0:v -map "[a]" -t 11.90 \
+    -filter_complex "[1:a]atrim=0:9.25,asetpts=N/SR/TB,afade=t=out:st=9.15:d=0.10,apad[a]" \
+    -map 0:v -map "[a]" -t 10.40 \
     -c:v libx264 -preset slow -crf 21 -maxrate 12M -bufsize 24M \
     -pix_fmt yuv420p -profile:v high -level 4.2 -movflags +faststart -r 30 \
     -c:a aac -b:a 192k -ar 44100 "$OUT"
 else
   echo "   (no audio argument — rendering silent)"
   "$FFMPEG" -y -hide_banner -loglevel error \
-    -framerate 30 -i frames/f%05d.png -t 11.90 \
+    -framerate 30 -i frames/f%05d.png -t 10.40 \
     -c:v libx264 -preset slow -crf 21 -maxrate 12M -bufsize 24M \
     -pix_fmt yuv420p -profile:v high -level 4.2 -movflags +faststart -r 30 "$OUT"
 fi

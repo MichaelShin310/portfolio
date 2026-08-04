@@ -53,7 +53,6 @@
   /* ---- hud ---- */
   #hud { position:absolute; inset:0; pointer-events:none;
          font-family:'JetBrains Mono', monospace; font-weight:500; }
-  #idx { position:absolute; top:96px; right:78px; font-size:27px; letter-spacing:0.2em; }
   #mark { position:absolute; top:96px; left:78px; font-size:27px; letter-spacing:0.22em; }
   #barTrack { position:absolute; left:78px; right:78px; bottom:104px; height:5px; border-radius:3px; }
   #barFill  { position:absolute; left:0; top:0; height:5px; border-radius:3px; }
@@ -79,7 +78,6 @@
   </div>
   <div id="hud">
     <div id="mark">UTERN</div>
-    <div id="idx">01</div>
     <div id="barTrack"><div id="barFill"></div></div>
   </div>
   <div id="vig"></div>
@@ -92,12 +90,33 @@
 const BLUE = '#4782E7';
 const WHITE = '#FFFFFF';
 const DEEP  = '#1B4FB0';          // darker blue for depth accents
-const FPS = 30, DUR = 11.90;
+const FPS = 30, DUR = 10.40;
 
-const B  = 0.339943;              // 176.5 BPM eighth-grid, measured from the ref audio
-const T0 = 0.26;                  // phase offset of beat 0
-const bt = i => T0 + i * B;
-const DROP = bt(28);              // 9.778s — biggest onset in the track
+/* Every cut sits on a measured onset in the soundtrack rather than on a
+   metronome grid — the track's hits are not evenly spaced. Onsets arrive in
+   pairs about 0.12s apart (hit + flam); these are the strong one of each pair.
+   The music ends naturally at ~9.2s, so the logo takes the last hit that still
+   has music ringing under it. */
+const CUT = [
+  0.145,  // We
+  0.595,  // don't
+  1.280,  // just
+  1.845,  // find
+  2.410,  // you
+  2.905,  // internships
+  3.835,  // we
+  4.235,  // match
+  5.030,  // you with
+  5.320,  // companies
+  6.045,  // and
+  6.400,  // prove
+  7.115,  // that
+  7.435,  // you're
+  7.615,  // ready.
+  8.485,  // with
+  8.745,  // logo
+];
+const DROP = CUT[16];             // 8.745s — logo lands here
 
 /* ================= easing ================= */
 const cl = (x,a=0,b=1) => Math.min(b, Math.max(a,x));
@@ -113,26 +132,28 @@ const mix = (a,b,x) => a+(b-a)*x;
              we / match / you / with / companies / and /
              prove / that / you're / ready / with / UTern(logo)          */
 const CARDS = [
-  { w:'We',           a:0,  b:2,  bg:'w', fx:'punch',     size:330, n:1 },
-  { w:'don’t',        a:2,  b:4,  bg:'b', fx:'wipeL',     size:330, n:2 },
-  { w:'just',         a:4,  b:6,  bg:'w', fx:'rise',      size:330, whip:1, whipY:-330, n:3 },
-  { w:'find',         a:6,  b:8,  bg:'b', fx:'letterDrop',size:330, n:4 },
-  { w:'you',          a:8,  b:9,  bg:'w', fx:'snap',      size:270, n:5 },
+  { w:'We',           bg:'w', fx:'punch',     size:330 },
+  { w:'don’t',        bg:'b', fx:'wipeL',     size:330 },
+  { w:'just',         bg:'w', fx:'rise',      size:330, whip:1, whipY:-330 },
+  { w:'find',         bg:'b', fx:'letterDrop',size:330 },
+  { w:'you',          bg:'w', fx:'snap',      size:270 },
   /* the two long words are deliberately oversized — auto-fit pins them to the
      safe width so they fill the frame like the short words do */
-  { w:'internships',  a:9,  b:12, bg:'b', fx:'trackIn',   size:220, rule:1, n:6 },
-  { w:'we',           a:12, b:13, bg:'w', fx:'fadeSm',    size:210, n:7 },
-  { w:'match',        a:13, b:15, bg:'b', fx:'converge',  size:320, n:8 },
-  { w:'you with',     a:15, b:16, bg:'w', fx:'slideR',    size:215, n:10 },
-  { w:'companies',    a:16, b:18, bg:'b', fx:'letterPop', size:240, whip:1, whipY:300, n:11 },
-  { w:'and',          a:18, b:19, bg:'w', fx:'flip',      size:250, whip:1, whipY:-300, n:12 },
-  { w:'prove',        a:19, b:21, bg:'b', fx:'stamp',     size:310, n:13 },
-  { w:'that',         a:21, b:22, bg:'w', fx:'wipeUp',    size:250, n:14 },
-  { w:'you’re',       a:22, b:23, bg:'b', fx:'wipeDn',    size:250, n:15 },
-  { w:'ready.',       a:23, b:26, bg:'w', fx:'hero',      size:330, rule:1, n:16 },
-  { w:'with',         a:26, b:28, bg:'b', fx:'anticip',   size:225, n:17 },
+  { w:'internships',  bg:'b', fx:'trackIn',   size:220, rule:1 },
+  { w:'we',           bg:'w', fx:'fadeSm',    size:210 },
+  { w:'match',        bg:'b', fx:'converge',  size:320 },
+  { w:'you with',     bg:'w', fx:'slideR',    size:215 },
+  { w:'companies',    bg:'b', fx:'letterPop', size:240, whip:1, whipY:300 },
+  { w:'and',          bg:'w', fx:'flip',      size:250, whip:1, whipY:-300 },
+  { w:'prove',        bg:'b', fx:'stamp',     size:310 },
+  { w:'that',         bg:'w', fx:'wipeUp',    size:250 },
+  { w:'you’re',       bg:'b', fx:'wipeDn',    size:250 },
+  /* holds across two more hits (8.015, 8.220) — it pulses on each so the
+     climax word punches with the track instead of sitting still */
+  { w:'ready.',       bg:'w', fx:'hero',      size:330, rule:1, pulses:[8.015, 8.220] },
+  { w:'with',         bg:'b', fx:'anticip',   size:225 },
 ];
-CARDS.forEach(c => { c.t0 = bt(c.a); c.t1 = bt(c.b); });
+CARDS.forEach((c,i) => { c.t0 = CUT[i]; c.t1 = CUT[i+1]; });
 
 /* ================= build DOM ================= */
 const $ = id => document.getElementById(id);
@@ -392,7 +413,13 @@ function renderFrame(t){
 
       case 'hero': {
         const e = outBack(cl(lt/0.32), 1.5);
-        tf = `scale(${mix(0.55, breathe*1.02, e)})`;
+        // kick on each onset this card holds across
+        let pulse = 0;
+        (c.pulses||[]).forEach(pt => {
+          const q = (t - pt) / 0.20;
+          if (q >= 0 && q < 1) pulse += (1 - outQuad(q)) * 0.06;
+        });
+        tf = `scale(${mix(0.55, breathe*1.02, e) * (1 + pulse)})`;
         c.lineEl.style.opacity = cl(lt/0.05);
         break;
       }
@@ -441,8 +468,6 @@ function renderFrame(t){
     hud.style.opacity = 1;
     hud.style.color = ink;
     $('mark').style.color = ink; $('mark').style.opacity = 0.5;
-    $('idx').style.color = ink;  $('idx').style.opacity = 0.5;
-    $('idx').textContent = String(c.n).padStart(2,'0') + ' / 18';
     $('barTrack').style.background = ink; $('barTrack').style.opacity = 0.22;
     $('barFill').style.background = ink;
     $('barFill').style.width = (cl(t/DROP)*100)+'%';

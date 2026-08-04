@@ -1,6 +1,6 @@
 # UTern hook video — motion source
 
-Kinetic-typography hook for UTern. 1080×1920, 30fps, 11.90s.
+Kinetic-typography hook for UTern. 1080×1920, 30fps, 10.40s.
 Output lives at `img/utern/utern-hook-9x16.mp4` (poster: `utern-hook-poster.jpg`).
 
 **Script (18 words):**
@@ -14,23 +14,35 @@ whole composition for any time `t`. Nothing uses CSS transitions or
 which is what makes frame-by-frame capture reliable.
 
 `capture.js` drives headless Chromium: it calls `renderFrame(t)` for each of the
-357 frames and screenshots the viewport. `build.sh` then muxes the audio under
+312 frames and screenshots the viewport. `build.sh` then muxes the audio under
 the frames with ffmpeg.
 
 ## Timing
 
-The cadence is pinned to the soundtrack rather than eyeballed. The track runs at
-**176.5 BPM** (a 0.3399s grid) with the first beat at **0.26s**, so every word
-change lands on a beat:
+Every cut sits on a **measured onset** in the soundtrack, not on a metronome
+grid — the track's hits are not evenly spaced, so a fitted BPM grid drifts off
+them. Onsets were extracted by spectral flux at 5ms resolution; they arrive in
+pairs roughly 0.12s apart (hit plus flam), and the cuts take the stronger one of
+each pair. The result is the `CUT` array in `scene.html`:
 
 ```js
-const B = 0.339943, T0 = 0.26;
-const bt = i => T0 + i * B;      // beat index -> seconds
+const CUT = [0.145, 0.595, 1.280, 1.845, 2.410, 2.905, 3.835, 4.235,
+             5.030, 5.320, 6.045, 6.400, 7.115, 7.435, 7.615, 8.485, 8.745];
 ```
 
-Words hold for two beats early and one beat later on, so the cut rhythm
-accelerates into the ending. The track's largest onset is at **9.76s** — that's
-`bt(28)`, and it's where the logo lands.
+Card *i* runs from `CUT[i]` to `CUT[i+1]`. Emphasis words skip an onset so they
+hold longer; connectors take a single short interval. Measured against the
+encoded file, every cut lands within one frame of its onset (33ms at 30fps).
+
+`ready.` holds across two further onsets (8.015, 8.220) and takes a scale pulse
+on each, so the climax word punches with the track rather than sitting still.
+
+### Audio
+
+The music ends by itself at ~9.2s. Everything after that in the reference clip
+is that video's own outro sting, so `build.sh` trims the track at 9.25s. The
+logo lands at 8.745 — the last hit with music still ringing under it — and the
+card plays out silent.
 
 ## Editing the copy
 
@@ -39,16 +51,16 @@ The beat sheet is the `CARDS` array in `scene.html`. Each entry is one card:
 | field | meaning |
 |---|---|
 | `w` | the word |
-| `a`, `b` | start/end **beat index** (multiply by `B`, add `T0`, for seconds) |
 | `bg` | `'w'` white card / `'b'` blue card — these alternate to give the hard colour flips |
 | `fx` | which animation runs (`punch`, `wipeL`, `converge`, `stamp`, `hero`, …) |
 | `size` | font size in px; oversized values get clamped to the 940px safe width |
-| `n` | word number shown in the HUD counter |
 | `rule`, `whip`, `whipY` | optional underline / speed-streak accents |
+| `pulses` | absolute times to kick on, for a card that holds across extra onsets |
 
-Keep `b` of one card equal to `a` of the next so there are no gaps. If you add
-or remove words, the last card should still end at beat 28 to keep the logo on
-the drop.
+Cards take their timing by position: card *i* uses `CUT[i]`. So `CARDS` and
+`CUT` must stay the same length, with one extra `CUT` entry at the end for the
+logo. To retime a cut, move its value in `CUT` to another onset — keep the last
+entry on a hit that still has music under it.
 
 ## Rebuilding
 
