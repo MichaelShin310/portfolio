@@ -7,9 +7,9 @@ Changes vs. the source cut:
   * the baked-in bottom gradient (which washed out everything below y=1060)
     is inverted out, so ~340px of chat content that used to be hidden is
     visible again
-  * the caption sits in a compact block in the empty space under the chat
+  * the caption is one short centred line in the empty space under the chat
     instead of a full-width gradient slab
-  * new copy: an interview-prep script instead of the product walkthrough
+  * new copy: interview-skills coaching instead of the product walkthrough
 """
 
 import subprocess, sys, os
@@ -68,53 +68,42 @@ def ungradient(img, k):
 def font(name, size):
     return ImageFont.truetype(os.path.join(FONTS, name), size)
 
-F_EYE = font("Outfit-Regular.ttf", 31)
-F_HEAD = font("Outfit-Bold.ttf", 75)
+F_HEAD = font("Outfit-Bold.ttf", 54)
 F_CLOSE = font("Outfit-Bold.ttf", 78)
 
-def tracked(draw, xy, text, fnt, fill, track=0):
-    x, y = xy
-    for ch in text:
-        draw.text((x, y), ch, font=fnt, fill=fill)
-        x += draw.textlength(ch, font=fnt) + track
-
 # ------------------------------------------------------------------ the script
-#   (eyebrow, [headline lines], out_start, out_end)   times in OUTPUT seconds
+# One short line at a time - no eyebrow, no rule, no second line.  It reads as
+# one continuous piece of advice rather than a numbered list.
+#   (line, out_start, out_end)   times in OUTPUT seconds
 CAPTIONS = [
-    ("BEFORE THE INTERVIEW",      ["Practice out loud."],                 0.20,  3.80),
-    ("IN YOUR HEAD DOESN'T COUNT", ["You need to hear",
-                                    "yourself say it."],                  3.80,  8.20),
-    ("RULE ONE",                  ["Answer what", "they asked."],         8.20, 12.60),
-    ("RULE TWO",                  ["Say I, not we."],                    12.60, 21.00),
-    ("RULE THREE",                ["Details beat", "adjectives."],       21.00, 29.00),
-    ("RULE FOUR",                 ["End with the result."],              29.00, 35.80),
-    ("RULE FIVE",                 ["Then stop talking."],                35.80, 40.90),
+    ("Reading isn’t practice.",      0.20,  3.80),
+    ("Say your answers out loud.",   3.80,  8.20),
+    ("Answer the question asked.",   8.20, 12.60),
+    ("Say “I”, not “we”.", 12.60, 21.00),
+    ("Trade adjectives for facts.", 21.00, 29.00),
+    ("Stop when you’ve answered.",  29.00, 35.80),
+    ("Do it once. Walk in calm.",   35.80, 40.90),
 ]
 
-RULE_Y, RULE_X, RULE_W, RULE_H = 1512, 64, 76, 7
-EYE_Y, HEAD_Y, LH = 1552, 1622, 88
+CAP_Y = 1606                          # top of the single caption line
+MAX_TEXT_W = W - 120                  # keep the side margins honest
 
-MAX_TEXT_W = W - RULE_X - 56          # keep the right margin honest
-
-def render_caption(eyebrow, lines):
-    """Pre-render one caption block as an RGBA layer."""
+def render_caption(line):
+    """Pre-render one caption line, centred, as an RGBA layer."""
     layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
-    d.rectangle([RULE_X, RULE_Y, RULE_X + RULE_W, RULE_Y + RULE_H], fill=BLUE + (255,))
-    tracked(d, (RULE_X, EYE_Y), eyebrow, F_EYE, BLUE + (255,), track=3.4)
-    for i, ln in enumerate(lines):
-        w = d.textlength(ln, font=F_HEAD)
-        assert w <= MAX_TEXT_W, f"headline too wide ({w:.0f}px): {ln!r}"
-        d.text((RULE_X - 4, HEAD_Y + i * LH), ln, font=F_HEAD, fill=INK + (255,))
+    w = d.textlength(line, font=F_HEAD)
+    assert w <= MAX_TEXT_W, f"caption too wide ({w:.0f}px): {line!r}"
+    d.text(((W - w) / 2, CAP_Y), line, font=F_HEAD, fill=INK + (255,))
     return np.asarray(layer).astype(float)
 
-CAP_LAYERS = [render_caption(e, l) for e, l, _, _ in CAPTIONS]
+CAP_LAYERS = [render_caption(l) for l, _, _ in CAPTIONS]
 
-FADE_IN, FADE_OUT, SLIDE = 0.34, 0.26, 14
+FADE_IN, FADE_OUT, SLIDE = 0.34, 0.26, 10
 
 def caption_at(t):
     """-> (layer, opacity, y-offset) for output time t, or None."""
-    for i, (_, _, t0, t1) in enumerate(CAPTIONS):
+    for i, (_, t0, t1) in enumerate(CAPTIONS):
         if t0 <= t < t1:
             if t - t0 < FADE_IN:
                 p = (t - t0) / FADE_IN
@@ -139,7 +128,7 @@ def composite(img, layer, op, dy, y0):
 # ------------------------------------------------------ closing callout rescript
 # The source's own callout keeps its blue rule at y804-809; only its three
 # lines of product copy (rows 856-1114) get painted out and rewritten.
-CLOSE_LINES = ["Now you have answers", "worth saying out loud."]
+CLOSE_LINES = ["Say it out loud once.", "Then it’s just talking."]
 CLOSE_TOP, CLOSE_BOT, CLOSE_FEATHER = 822, 1178, 30
 CLOSE_X, CLOSE_Y, CLOSE_LH = 60, 852, 96
 
@@ -183,7 +172,7 @@ def process(img, t_src, t_out):
     if t_src < T_CALLOUT:
         c = caption_at(t_out)
         if c:
-            img = composite(img, c[0], c[1], c[2], RULE_Y - 40)
+            img = composite(img, c[0], c[1], c[2], CAP_Y - 40)
     else:
         # re-script the full-screen callout, keeping its blue rule.  The
         # paint-out ramps in alongside the source's own scrim so the box

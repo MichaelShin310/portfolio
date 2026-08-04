@@ -28,15 +28,16 @@ set in `SRC` at the top of the script).
   follow it. Recovery runs to a≈0.955 and feathers out after that; the footage
   is flat UI, so amplification stays clean. Net effect: chat content is legible
   to y≈1365 instead of y≈1060.
-- **Compact caption block.** Eyebrow + up to two headline lines in the empty
-  space under the chat (y1512–1711), with a small blue rule instead of a
-  full-width gradient. No caption runs longer than 8.4s; the source held one
-  for 25s.
-- **New copy** — interview-skills coaching: practice out loud → in your head
-  doesn't count → five rules (answer what they asked, say I not we, details
-  beat adjectives, end with the result, then stop talking). The app demo runs
-  underneath as b-roll; the rules are timed so each lands on the matching
-  moment in the conversation.
+- **One line of caption.** A single short centred line at 54px, sitting in the
+  empty space under the chat — no eyebrow, no rule, no second line. It occupies
+  about 70px of the 1920 frame; the source's slab ran 860px. No caption runs
+  longer than 8.4s; the source held one for 25s.
+- **New copy** — interview-skills coaching that reads as one continuous piece
+  of advice rather than a numbered list: reading isn't practice → say your
+  answers out loud → answer the question asked → say "I" not "we" → trade
+  adjectives for facts → stop when you've answered → do it once, walk in calm.
+  The app demo runs underneath as b-roll; the lines are timed so each lands on
+  the matching moment in the conversation.
 - **Re-scripted closing callout** and a dissolve straight into the brand card,
   skipping the source's wipe (which briefly re-revealed the washed app and
   brought the old caption slab back) and the half second of empty canvas
