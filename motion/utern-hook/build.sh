@@ -53,14 +53,14 @@ if [ -n "$AUDIO" ]; then
   "$FFMPEG" -y -hide_banner -loglevel error \
     -framerate 30 -i frames/f%05d.png -i "$AUDIO" \
     -filter_complex "[1:a]atrim=0:9.25,asetpts=N/SR/TB,afade=t=out:st=9.15:d=0.10,apad[a]" \
-    -map 0:v -map "[a]" -t 10.40 \
+    -map 0:v -map "[a]" -t 10.60 \
     -c:v libx264 -preset slow -crf 21 -maxrate 12M -bufsize 24M \
     -pix_fmt yuv420p -profile:v high -level 4.2 -movflags +faststart -r 30 \
     -c:a aac -b:a 192k -ar 44100 "$OUT"
 else
   echo "   (no audio argument — rendering silent)"
   "$FFMPEG" -y -hide_banner -loglevel error \
-    -framerate 30 -i frames/f%05d.png -t 10.40 \
+    -framerate 30 -i frames/f%05d.png -t 10.60 \
     -c:v libx264 -preset slow -crf 21 -maxrate 12M -bufsize 24M \
     -pix_fmt yuv420p -profile:v high -level 4.2 -movflags +faststart -r 30 "$OUT"
 fi

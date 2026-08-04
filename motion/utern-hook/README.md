@@ -1,6 +1,6 @@
 # UTern hook video — motion source
 
-Kinetic-typography hook for UTern. 1080×1920, 30fps, 10.40s.
+Kinetic-typography hook for UTern. 1080×1920, 30fps, 10.60s.
 Output lives at `img/utern/utern-hook-9x16.mp4` (poster: `utern-hook-poster.jpg`).
 
 **Script (21 words, one per musical event):**
@@ -14,7 +14,7 @@ whole composition for any time `t`. Nothing uses CSS transitions or
 which is what makes frame-by-frame capture reliable.
 
 `capture.js` drives headless Chromium: it calls `renderFrame(t)` for each of the
-312 frames and screenshots the viewport. `build.sh` then muxes the audio under
+318 frames and screenshots the viewport. `build.sh` then muxes the audio under
 the frames with ffmpeg.
 
 ## Timing
@@ -52,7 +52,18 @@ The music ends by itself at ~9.2s. Everything after that in the reference clip
 is that video's own outro sting, so `build.sh` trims the track at 9.25s.
 
 The logo takes the last **two** events: 8.745 reveals it, and 9.010 punches it
-and brings in the lockup below. The card then plays out silent.
+and brings in the end card below. The card then plays out silent.
+
+### End card
+
+`CLEARED FOR TAKEOFF` over `LAUNCHING SOON` (`#tag` / `#tag2` in `scene.html`).
+
+The wording deliberately avoids "ready": the script's climax word is `ready`,
+held longest of any card, and repeating it ~1.3s later would spend the payoff
+twice. "Cleared for takeoff" is aviation phrasing for permission granted *after
+the checks pass*, so it completes "…prove you are ready" instead of echoing it —
+and it pays off the tern in the logo. The piece runs 0.2s longer than the words
+alone need, so both CTA lines have time to read.
 
 ## Editing the copy
 
