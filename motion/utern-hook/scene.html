@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="fonts/embed.css" />
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1080px; height:1920px; overflow:hidden; background:#000; }
+
+  #stage {
+    position:relative; width:1080px; height:1920px; overflow:hidden;
+    font-family:'Inter Tight', sans-serif; -webkit-font-smoothing:antialiased;
+  }
+
+  #bg { position:absolute; inset:0; }
+
+  /* ---- card layer ---- */
+  #cards { position:absolute; inset:0; }
+  .card {
+    position:absolute; inset:0; display:none;
+    align-items:center; justify-content:center; flex-direction:column;
+  }
+  .card.on { display:flex; }
+  .line {
+    position:relative; white-space:nowrap; line-height:0.86;
+    font-weight:900; letter-spacing:-0.035em; text-align:center;
+    transform-origin:50% 50%;
+  }
+  .ltr { display:inline-block; transform-origin:50% 60%; will-change:transform; }
+
+  /* converge card: two clipped halves */
+  .half { position:absolute; left:50%; top:50%; white-space:nowrap;
+          font-weight:900; letter-spacing:-0.035em; line-height:0.86; }
+
+  .rule { position:absolute; height:12px; border-radius:2px; }
+  .seam { position:absolute; width:6px; border-radius:3px; }
+
+  /* ---- fx ---- */
+  #fx { position:absolute; inset:0; pointer-events:none; }
+  .ring { position:absolute; left:50%; top:50%; border-radius:50%;
+          transform:translate(-50%,-50%); border-style:solid; }
+  #whip { position:absolute; left:0; width:1080px; }
+
+  /* ---- outro ---- */
+  #outro { position:absolute; inset:0; display:none;
+           align-items:center; justify-content:center; flex-direction:column; }
+  #outro.on { display:flex; }
+  #logo { width:820px; }
+  #tag { margin-top:64px; font-family:'JetBrains Mono', monospace; font-weight:700;
+         font-size:30px; letter-spacing:0.34em; color:#fff; white-space:nowrap; }
+  #tagrule { margin-top:52px; height:5px; background:#fff; border-radius:3px; }
+
+  /* ---- hud ---- */
+  #hud { position:absolute; inset:0; pointer-events:none;
+         font-family:'JetBrains Mono', monospace; font-weight:500; }
+  #idx { position:absolute; top:96px; right:78px; font-size:27px; letter-spacing:0.2em; }
+  #mark { position:absolute; top:96px; left:78px; font-size:27px; letter-spacing:0.22em; }
+  #barTrack { position:absolute; left:78px; right:78px; bottom:104px; height:5px; border-radius:3px; }
+  #barFill  { position:absolute; left:0; top:0; height:5px; border-radius:3px; }
+
+  /* ---- overlays ---- */
+  #flash { position:absolute; inset:0; background:#fff; opacity:0; }
+  #grain { position:absolute; inset:-120px; background-image:url(assets/grain.png);
+           background-repeat:repeat; opacity:0.05; mix-blend-mode:overlay; }
+  /* vignette only reads well on the blue cards — on white it turns to grey mush,
+     so its colour + strength are set per-frame in JS */
+  #vig { position:absolute; inset:0; pointer-events:none; opacity:0; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg"></div>
+  <div id="fx"><div id="whip"></div></div>
+  <div id="cards"></div>
+  <div id="outro">
+    <img id="logo" src="assets/logo_white.png" alt="UTern" />
+    <div id="tagrule"></div>
+    <div id="tag">150+ SIGNUPS &amp; COUNTING</div>
+  </div>
+  <div id="hud">
+    <div id="mark">UTERN</div>
+    <div id="idx">01</div>
+    <div id="barTrack"><div id="barFill"></div></div>
+  </div>
+  <div id="vig"></div>
+  <div id="grain"></div>
+  <div id="flash"></div>
+</div>
+
+<script>
+/* ================= constants ================= */
+const BLUE = '#4782E7';
+const WHITE = '#FFFFFF';
+const DEEP  = '#1B4FB0';          // darker blue for depth accents
+const FPS = 30, DUR = 11.90;
+
+const B  = 0.339943;              // 176.5 BPM eighth-grid, measured from the ref audio
+const T0 = 0.26;                  // phase offset of beat 0
+const bt = i => T0 + i * B;
+const DROP = bt(28);              // 9.778s — biggest onset in the track
+
+/* ================= easing ================= */
+const cl = (x,a=0,b=1) => Math.min(b, Math.max(a,x));
+const outExpo  = x => x>=1?1:1-Math.pow(2,-10*x);
+const outQuint = x => 1-Math.pow(1-x,5);
+const outBack  = (x,s=1.85) => 1+(s+1)*Math.pow(x-1,3)+s*Math.pow(x-1,2);
+const inQuad   = x => x*x;
+const outQuad  = x => 1-(1-x)*(1-x);
+const mix = (a,b,x) => a+(b-a)*x;
+
+/* ================= beat sheet =================
+   18 words: We / don't / just / find / you / internships /
+             we / match / you / with / companies / and /
+             prove / that / you're / ready / with / UTern(logo)          */
+const CARDS = [
+  { w:'We',           a:0,  b:2,  bg:'w', fx:'punch',     size:330, n:1 },
+  { w:'don’t',        a:2,  b:4,  bg:'b', fx:'wipeL',     size:330, n:2 },
+  { w:'just',         a:4,  b:6,  bg:'w', fx:'rise',      size:330, whip:1, whipY:-330, n:3 },
+  { w:'find',         a:6,  b:8,  bg:'b', fx:'letterDrop',size:330, n:4 },
+  { w:'you',          a:8,  b:9,  bg:'w', fx:'snap',      size:270, n:5 },
+  /* the two long words are deliberately oversized — auto-fit pins them to the
+     safe width so they fill the frame like the short words do */
+  { w:'internships',  a:9,  b:12, bg:'b', fx:'trackIn',   size:220, rule:1, n:6 },
+  { w:'we',           a:12, b:13, bg:'w', fx:'fadeSm',    size:210, n:7 },
+  { w:'match',        a:13, b:15, bg:'b', fx:'converge',  size:320, n:8 },
+  { w:'you with',     a:15, b:16, bg:'w', fx:'slideR',    size:215, n:10 },
+  { w:'companies',    a:16, b:18, bg:'b', fx:'letterPop', size:240, whip:1, whipY:300, n:11 },
+  { w:'and',          a:18, b:19, bg:'w', fx:'flip',      size:250, whip:1, whipY:-300, n:12 },
+  { w:'prove',        a:19, b:21, bg:'b', fx:'stamp',     size:310, n:13 },
+  { w:'that',         a:21, b:22, bg:'w', fx:'wipeUp',    size:250, n:14 },
+  { w:'you’re',       a:22, b:23, bg:'b', fx:'wipeDn',    size:250, n:15 },
+  { w:'ready.',       a:23, b:26, bg:'w', fx:'hero',      size:330, rule:1, n:16 },
+  { w:'with',         a:26, b:28, bg:'b', fx:'anticip',   size:225, n:17 },
+];
+CARDS.forEach(c => { c.t0 = bt(c.a); c.t1 = bt(c.b); });
+
+/* ================= build DOM ================= */
+const $ = id => document.getElementById(id);
+const cardsEl = $('cards');
+
+CARDS.forEach((c,i) => {
+  const el = document.createElement('div');
+  el.className = 'card';
+
+  if (c.fx === 'converge') {
+    // two copies of the word, each clipped to one half, sliding together
+    const wrap = document.createElement('div');
+    wrap.className = 'line'; wrap.style.fontSize = c.size+'px';
+    wrap.style.visibility = 'hidden'; wrap.textContent = c.w;   // spacer for metrics
+    el.appendChild(wrap);
+    ['L','R'].forEach(side => {
+      const h = document.createElement('div');
+      h.className = 'half'; h.style.fontSize = c.size+'px';
+      h.textContent = c.w;
+      h.style.clipPath = side==='L' ? 'inset(-40% 50% -40% -40%)' : 'inset(-40% -40% -40% 50%)';
+      el.appendChild(h); c['half'+side] = h;
+    });
+    const seam = document.createElement('div');
+    seam.className = 'seam'; el.appendChild(seam); c.seamEl = seam;
+  } else {
+    const line = document.createElement('div');
+    line.className = 'line'; line.style.fontSize = c.size+'px';
+    [...c.w].forEach(ch => {
+      const s = document.createElement('span');
+      s.className = 'ltr';
+      s.textContent = ch === ' ' ? ' ' : ch;
+      line.appendChild(s);
+    });
+    el.appendChild(line);
+    c.lineEl = line;
+    c.ltrs = [...line.children];
+  }
+
+  if (c.rule) { const r = document.createElement('div'); r.className='rule'; el.appendChild(r); c.ruleEl = r; }
+
+  cardsEl.appendChild(el);
+  c.el = el;
+});
+
+/* auto-fit: shrink any word that would overflow the safe width */
+const SAFE = 940;
+CARDS.forEach(c => {
+  c.el.classList.add('on');
+  const target = c.fx==='converge' ? c.el.querySelector('.line') : c.lineEl;
+  const w = target.getBoundingClientRect().width;
+  if (w > SAFE) {
+    const k = SAFE / w;
+    c.size = Math.floor(c.size * k);
+    if (c.fx === 'converge') {
+      target.style.fontSize = c.size+'px';
+      c.halfL.style.fontSize = c.size+'px'; c.halfR.style.fontSize = c.size+'px';
+    } else { c.lineEl.style.fontSize = c.size+'px'; }
+  }
+  c.wpx = target.getBoundingClientRect().width;   // settled width, for rule sizing
+  c.el.classList.remove('on');
+});
+
+/* vignette: a touch of depth on blue, nothing at all on white */
+function setVig(light){
+  const v = $('vig');
+  if (light) { v.style.opacity = 0; return; }
+  v.style.opacity = 1;
+  v.style.background = 'radial-gradient(ellipse at 50% 46%, rgba(20,60,150,0) 55%, rgba(20,60,150,0.30) 100%)';
+}
+
+/* fx: rings for the stamp + the drop */
+const fxEl = $('fx');
+const RINGS = [];
+for (let i=0;i<3;i++){ const r=document.createElement('div'); r.className='ring'; fxEl.appendChild(r); RINGS.push(r); }
+
+/* ================= render ================= */
+function renderFrame(t){
+  const stage=$('stage'), bg=$('bg'), flash=$('flash'), grain=$('grain');
+  const outro=$('outro'), hud=$('hud');
+
+  let shakeX=0, shakeY=0;
+  RINGS.forEach(r => r.style.opacity = 0);
+  $('whip').style.opacity = 0;
+  CARDS.forEach(c => c.el.classList.remove('on'));
+  outro.classList.remove('on');
+
+  /* ---------- grain drift (deterministic) ---------- */
+  const f = Math.round(t*FPS);
+  grain.style.backgroundPosition = `${(f*67)%256}px ${(f*151)%256}px`;
+
+  if (t < DROP) {
+    /* ================= TYPE SECTION ================= */
+    let c = CARDS[0];
+    for (const k of CARDS) if (t >= k.t0) c = k;
+    const idx = CARDS.indexOf(c);
+    const lt = t - c.t0;                       // seconds since card start
+    const p  = cl(lt / (c.t1 - c.t0));         // normalised progress
+
+    const light = c.bg === 'w';
+    const paper = light ? WHITE : BLUE;
+    const ink   = light ? BLUE  : WHITE;
+    bg.style.background = paper;
+    setVig(light);
+
+    c.el.classList.add('on');
+
+    /* reset shared props */
+    if (c.fx !== 'converge') {
+      c.lineEl.style.color = ink;
+      c.lineEl.style.filter = 'none';
+      c.lineEl.style.clipPath = 'none';
+      c.lineEl.style.opacity = 1;
+      c.lineEl.style.letterSpacing = '-0.035em';
+      c.ltrs.forEach(s => { s.style.transform='none'; s.style.opacity=1; });
+    }
+
+    // subtle life: every card breathes a hair so nothing is ever frozen
+    const breathe = 1 + Math.sin(lt*3.1)*0.006;
+    let tf = `scale(${breathe})`;
+
+    switch (c.fx) {
+
+      case 'punch': {
+        const e = outExpo(cl(lt/0.22));
+        tf = `scale(${mix(1.55,breathe,e)})`;
+        c.lineEl.style.filter = `blur(${mix(20,0,cl(lt/0.16))}px)`;
+        c.lineEl.style.opacity = cl(lt/0.07);
+        break;
+      }
+
+      case 'wipeL': {
+        const e = outExpo(cl(lt/0.24));
+        c.lineEl.style.clipPath = `inset(-30% ${mix(100,0,e)}% -30% -30%)`;
+        tf = `translateX(${mix(-70,0,e)}px) scale(${breathe})`;
+        break;
+      }
+
+      case 'rise': {
+        const e = outBack(cl(lt/0.34));
+        tf = `translateY(${mix(160,0,e)}px) scale(${breathe})`;
+        c.lineEl.style.opacity = cl(lt/0.06);
+        break;
+      }
+
+      case 'letterDrop': {
+        c.ltrs.forEach((s,i) => {
+          const e = outBack(cl((lt - i*0.035)/0.30));
+          s.style.transform = `translateY(${mix(-150,0,e)}px)`;
+          s.style.opacity = cl((lt - i*0.035)/0.05);
+        });
+        break;
+      }
+
+      case 'snap': {
+        const e = outBack(cl(lt/0.17), 2.6);
+        tf = `scale(${mix(0.5,breathe,e)})`;
+        c.lineEl.style.opacity = cl(lt/0.05);
+        break;
+      }
+
+      case 'trackIn': {
+        // letters start wide-tracked and tighten. The extra tracking is paid for
+        // with a smaller start scale so the word never runs past the frame edge.
+        const e = outExpo(cl(lt/0.52));
+        c.lineEl.style.letterSpacing = mix(0.16,-0.035,e).toFixed(4)+'em';
+        c.lineEl.style.opacity = cl(lt/0.12);
+        c.lineEl.style.filter = `blur(${mix(9,0,cl(lt/0.3))}px)`;
+        tf = `scale(${mix(0.80,breathe,e)})`;
+        break;
+      }
+
+      case 'fadeSm': {
+        const e = outExpo(cl(lt/0.18));
+        tf = `scale(${mix(0.86,breathe,e)})`;
+        c.lineEl.style.opacity = cl(lt/0.07);
+        break;
+      }
+
+      case 'converge': {
+        const e = outExpo(cl(lt/0.28));
+        const off = mix(420,0,e);
+        [['halfL',-1],['halfR',1]].forEach(([k,dir]) => {
+          const h = c[k];
+          h.style.color = ink;
+          h.style.transform = `translate(calc(-50% + ${dir*off}px), -50%) scale(${breathe})`;
+          h.style.opacity = cl(lt/0.05);
+        });
+        // seam flashes at the moment the halves meet
+        const s = c.seamEl, sp = cl((lt-0.20)/0.26);
+        s.style.background = ink;
+        s.style.left='50%'; s.style.top='50%';
+        s.style.height = mix(40, c.size*1.5, outExpo(sp))+'px';
+        s.style.transform = 'translate(-50%,-50%)';
+        s.style.opacity = sp<=0 ? 0 : (1-sp)*0.9;
+        break;
+      }
+
+      case 'slideR': {
+        const e = outExpo(cl(lt/0.22));
+        tf = `translateX(${mix(260,0,e)}px) scale(${breathe})`;
+        c.lineEl.style.opacity = cl(lt/0.06);
+        c.lineEl.style.filter = `blur(${mix(14,0,cl(lt/0.14))}px)`;
+        break;
+      }
+
+      case 'letterPop': {
+        c.ltrs.forEach((s,i) => {
+          const e = outBack(cl((lt - i*0.028)/0.26), 2.4);
+          s.style.transform = `scale(${mix(0.1,1,e)})`;
+          s.style.opacity = cl((lt - i*0.028)/0.04);
+        });
+        break;
+      }
+
+      case 'flip': {
+        const e = outExpo(cl(lt/0.20));
+        tf = `perspective(1400px) rotateX(${mix(-92,0,e)}deg) scale(${breathe})`;
+        c.lineEl.style.opacity = cl(lt/0.05);
+        break;
+      }
+
+      case 'stamp': {
+        const e = outExpo(cl(lt/0.15));
+        tf = `scale(${mix(2.3,breathe,e)})`;
+        c.lineEl.style.opacity = cl(lt/0.03);
+        // impact shake
+        if (lt < 0.14) {
+          const d = (1 - lt/0.14) * 16;
+          shakeX = Math.sin(lt*150)*d; shakeY = Math.cos(lt*127)*d;
+        }
+        // expanding rings on impact
+        RINGS.forEach((r,i) => {
+          const rp = cl((lt - i*0.075)/0.62);
+          if (rp<=0 || rp>=1) { r.style.opacity=0; return; }
+          const q = outQuint(rp), sz = mix(120,1500,q);
+          r.style.width=sz+'px'; r.style.height=sz+'px';
+          r.style.borderWidth = mix(12,1,q)+'px';
+          r.style.borderColor = ink;
+          r.style.opacity = (1-rp)*0.5;
+        });
+        break;
+      }
+
+      case 'wipeUp': {
+        const e = outExpo(cl(lt/0.20));
+        c.lineEl.style.clipPath = `inset(${mix(100,-30,e)}% -30% -30% -30%)`;
+        tf = `translateY(${mix(50,0,e)}px) scale(${breathe})`;
+        break;
+      }
+
+      case 'wipeDn': {
+        const e = outExpo(cl(lt/0.20));
+        c.lineEl.style.clipPath = `inset(-30% -30% ${mix(100,-30,e)}% -30%)`;
+        tf = `translateY(${mix(-50,0,e)}px) scale(${breathe})`;
+        break;
+      }
+
+      case 'hero': {
+        const e = outBack(cl(lt/0.32), 1.5);
+        tf = `scale(${mix(0.55, breathe*1.02, e)})`;
+        c.lineEl.style.opacity = cl(lt/0.05);
+        break;
+      }
+
+      case 'anticip': {
+        // pull back and dim — loads tension into the drop
+        const e = outExpo(cl(lt/0.20));
+        const pull = 1 - cl((lt-0.22)/0.46)*0.10;
+        tf = `scale(${mix(1.25,1,e)*pull})`;
+        c.lineEl.style.opacity = cl(lt/0.06);
+        break;
+      }
+    }
+
+    if (c.fx !== 'converge') c.lineEl.style.transform = tf;
+
+    /* rule sweep under the emphasis words */
+    if (c.ruleEl) {
+      const r = c.ruleEl, rp = outExpo(cl((lt-0.26)/0.38));
+      const wpx = c.wpx * rp;
+      r.style.background = ink;
+      r.style.width = wpx+'px';
+      r.style.left = (540 - wpx/2)+'px';
+      r.style.top = (960 + c.size*0.62)+'px';
+      r.style.opacity = rp>0 ? 1 : 0;
+    }
+
+    /* speed streak across selected cuts — a gradient trail reads as motion,
+       where a hard bar just flickers past in two frames */
+    if (c.whip) {
+      const wp = cl(lt/0.42);
+      const wEl = $('whip');
+      if (wp>0 && wp<1) {
+        const e = outQuad(wp);
+        wEl.style.opacity = (1-inQuad(wp));
+        wEl.style.height = '18px';
+        wEl.style.width = '620px';
+        wEl.style.borderRadius = '9px';
+        wEl.style.background = `linear-gradient(90deg, ${ink}00 0%, ${ink}55 45%, ${ink} 100%)`;
+        wEl.style.top = (960 + (c.whipY||0)) + 'px';
+        wEl.style.transform = `translateX(${mix(-700,1740,e)}px)`;
+      }
+    }
+
+    /* HUD */
+    hud.style.opacity = 1;
+    hud.style.color = ink;
+    $('mark').style.color = ink; $('mark').style.opacity = 0.5;
+    $('idx').style.color = ink;  $('idx').style.opacity = 0.5;
+    $('idx').textContent = String(c.n).padStart(2,'0') + ' / 18';
+    $('barTrack').style.background = ink; $('barTrack').style.opacity = 0.22;
+    $('barFill').style.background = ink;
+    $('barFill').style.width = (cl(t/DROP)*100)+'%';
+    $('barFill').style.opacity = 1;
+    flash.style.opacity = 0;
+
+  } else {
+    /* ================= OUTRO ================= */
+    const lt = t - DROP;
+    bg.style.background = BLUE;
+    setVig(false);
+    outro.classList.add('on');
+
+    // hard white flash on the hit, then gone in 3 frames
+    flash.style.opacity = cl(1 - lt/0.10);
+
+    // logo: scale-in + left-to-right reveal
+    const e  = outBack(cl(lt/0.44), 1.35);
+    const rv = outExpo(cl(lt/0.42));
+    const drift = 1 + cl((lt-0.5)/2.6)*0.035;         // slow push-in so it never sits still
+    const logo = $('logo');
+    logo.style.transform = `scale(${mix(0.62,1,e)*drift})`;
+    logo.style.clipPath = `inset(-20% ${mix(100,-20,rv)}% -20% -20%)`;
+    logo.style.opacity = cl(lt/0.05);
+
+    // burst rings off the drop
+    RINGS.forEach((r,i) => {
+      const rp = cl((lt - i*0.10)/0.95);
+      if (rp<=0 || rp>=1) { r.style.opacity=0; return; }
+      const q = outQuint(rp), sz = mix(200,2100,q);
+      r.style.width=sz+'px'; r.style.height=sz+'px';
+      r.style.borderWidth = mix(16,1,q)+'px';
+      r.style.borderColor = '#FFFFFF';
+      r.style.opacity = (1-rp)*0.42;
+    });
+
+    // rule + tagline land on the track's closing hits
+    const rp = outExpo(cl((lt-0.50)/0.40));
+    $('tagrule').style.width = (300*rp)+'px';
+    $('tagrule').style.opacity = rp>0?0.9:0;
+    const tp = cl((lt-0.62)/0.34);
+    $('tag').style.opacity = tp;
+    $('tag').style.transform = `translateY(${mix(26,0,outExpo(tp))}px)`;
+
+    // shake on impact
+    if (lt < 0.16) { const d=(1-lt/0.16)*20; shakeX=Math.sin(lt*160)*d; shakeY=Math.cos(lt*133)*d; }
+
+    hud.style.opacity = 0;
+  }
+
+  stage.style.transform = (shakeX||shakeY) ? `translate(${shakeX}px,${shakeY}px)` : 'none';
+}
+window.renderFrame = renderFrame;
+window.META = { FPS, DUR, FRAMES: Math.round(DUR*FPS) };
+</script>
+</body>
+</html>
