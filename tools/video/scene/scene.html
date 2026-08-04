@@ -1,0 +1,402 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>UTern — interview tomorrow</title>
+<style>
+@font-face{font-family:Outfit;src:url(__FONT_REG__) format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:Outfit;src:url(__FONT_BOLD__) format('truetype');font-weight:700;font-display:block}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#F7F5F2}
+body{font-family:Outfit,sans-serif;-webkit-font-smoothing:antialiased}
+
+#stage{position:relative;width:1080px;height:1920px;background:#F7F5F2;overflow:hidden}
+.scene{position:absolute;inset:0;opacity:0}
+/* the app's UI type sits between Outfit's 400 and 700 */
+.ui{-webkit-text-stroke:.5px currentColor}
+
+/* ---------------------------------------------------------- status bar */
+#status{position:absolute;top:0;left:0;right:0;height:96px;display:flex;
+  align-items:center;justify-content:space-between;padding:0 62px;z-index:40}
+#status .time{font-weight:700;font-size:40px;letter-spacing:-.5px;color:#111}
+#status .icons{display:flex;align-items:center;gap:16px}
+
+/* ---------------------------------------------------------- home scene */
+#home .topbar{position:absolute;top:96px;left:0;right:0;height:104px;
+  display:flex;align-items:center;padding:0 44px;gap:20px}
+#home .topbar .bird{width:54px}
+#home .topbar .word{font-weight:700;font-size:41px;color:#1B6BE8;letter-spacing:-.8px}
+#home .topbar .sep{width:2px;height:30px;background:#DCD8D1;margin:0 8px}
+#home .topbar .home{font-size:26px;letter-spacing:2.8px;color:#8A857D}
+#home .topbar .me{margin-left:auto;width:64px;height:64px;border-radius:50%;
+  background:#E4ECFB;display:grid;place-items:center}
+#home .topbar .me img{width:50px}
+
+#home .hero{position:absolute;top:566px;left:0;right:0;text-align:center}
+#home .hero img{width:196px}
+#home .hero h1{font-weight:700;font-size:78px;letter-spacing:-2.2px;color:#101010;margin-top:50px}
+#home .hero p{font-size:42px;color:#6F6A62;margin-top:14px}
+
+#home .pill{position:absolute;top:1150px;left:48px;right:48px;height:134px;
+  border:2px solid #DDD8D1;border-radius:67px;display:flex;align-items:center;
+  padding:0 26px 0 44px;background:rgba(255,255,255,.5)}
+#home .txtwrap{flex:1;overflow:hidden;display:flex;align-items:center;height:100%}
+#home .row{display:flex;align-items:center;white-space:nowrap;width:max-content}
+#home .txt{font-size:41px;color:#12100E}
+#home .txt.ph{color:#A9A49C}
+#home .caret{width:3px;height:48px;background:#2E77F1;margin-left:4px;flex:none}
+#home .send{margin-left:22px;width:80px;height:80px;border-radius:50%;flex:none;
+  display:grid;place-items:center;background:#E9E5DF}
+#home .send svg{width:34px;height:34px}
+
+/* ---------------------------------------------------------- chat scene */
+#chat .hdr{position:absolute;top:96px;left:0;right:0;height:160px;
+  display:flex;align-items:center;padding:0 40px;gap:22px;z-index:20;background:#F7F5F2}
+#chat .hdr .av{width:112px;height:112px;border-radius:50%;flex:none;
+  border:4px solid #2E77F1;display:grid;place-items:center;background:#fff}
+#chat .hdr .av img{width:92px}
+#chat .hdr .name{font-weight:700;font-size:45px;letter-spacing:-1px;color:#101010}
+#chat .hdr .sub{font-size:29px;color:#7C776F;margin-top:5px}
+#chat .hdr .btns{margin-left:auto;display:flex;gap:14px}
+#chat .hdr .btn{width:76px;height:76px;border-radius:22px;background:#FCFBF9;
+  border:2px solid #E7E2DB;display:grid;place-items:center}
+#chat .hdr .btn svg{width:34px;height:34px}
+#hdrdots{display:none;gap:11px;margin-top:11px}
+#hdrdots i{width:14px;height:14px;border-radius:50%;background:#9CC0F7;display:block}
+
+#viewport{position:absolute;top:256px;left:0;right:0;height:1160px;overflow:hidden}
+#feed{position:absolute;left:0;right:0;top:0;padding:0 47px}
+.msg{margin-top:30px;display:flex}
+.msg.me{justify-content:flex-end}
+.bub{max-width:81%;border-radius:34px;padding:30px 38px;font-size:44px;line-height:1.36}
+.me .bub{background:#2E77F1;color:#fff}
+.bot .bub{background:#fff;color:#131313;max-width:100%;width:100%}
+.bub b{font-weight:700}
+.bub.card{position:relative;overflow:hidden}
+.typing{margin-top:30px;display:flex}
+.typing .box{background:#fff;border-radius:34px;padding:40px 44px;display:flex;gap:16px}
+.typing .box i{width:20px;height:20px;border-radius:50%;background:#C3C0BA;display:block}
+
+.card .kicker{font-weight:700;display:block}
+.card ul{list-style:none;margin-top:20px}
+.card li{display:flex;gap:22px;margin-top:22px;align-items:flex-start}
+.card .tick{width:46px;height:46px;border-radius:50%;background:#EAF1FE;flex:none;
+  display:grid;place-items:center;margin-top:7px}
+.card .tick svg{width:25px;height:25px}
+
+/* --------------------------------------------------- closing statement */
+#closing{display:grid;align-content:center;padding:0 62px}
+#closing .rule{width:76px;height:7px;background:#2E77F1;margin-bottom:46px}
+#closing h2{font-weight:700;font-size:80px;line-height:1.19;letter-spacing:-2.2px;color:#0A0A0A}
+
+/* ------------------------------------------------------------- endcard */
+#endcard{display:grid;align-content:center;justify-items:center;text-align:center}
+#endcard .glow{position:absolute;top:47%;left:50%;transform:translate(-50%,-50%);
+  width:1240px;height:1240px;border-radius:50%;
+  background:radial-gradient(circle,#DBE5FA 0%,rgba(232,238,250,.4) 43%,rgba(247,245,242,0) 69%)}
+#endcard .in{position:relative}
+#endcard img.bob{width:152px}
+#endcard .eyebrow{margin-top:46px;font-size:29px;letter-spacing:3.6px;color:#8A857D}
+#endcard h2{font-weight:700;font-size:84px;line-height:1.15;letter-spacing:-2.4px;
+  color:#0A0A0A;margin-top:20px}
+#endcard .cta{margin-top:54px;display:inline-block;background:#2E77F1;color:#fff;
+  font-size:40px;padding:33px 56px;border-radius:60px;
+  box-shadow:0 24px 56px rgba(46,119,241,.3)}
+#endcard .cta b{font-weight:700}
+#endcard .mark{margin-top:58px;display:flex;align-items:center;justify-content:center;gap:18px}
+#endcard .mark img{width:58px}
+#endcard .mark span{font-weight:700;font-size:47px;color:#1B6BE8;letter-spacing:-1.2px}
+
+/* ------------------------------------------------------------- caption */
+#caption{position:absolute;top:1606px;left:60px;right:60px;text-align:center;
+  font-weight:700;font-size:54px;letter-spacing:-1px;color:#0A0A0A;z-index:50}
+</style>
+
+<div id="stage">
+  <div id="status">
+    <div class="time">9:41</div>
+    <div class="icons">
+      <svg width="38" height="28" viewBox="0 0 38 28"><g fill="#111">
+        <rect x="0" y="19" width="6" height="9" rx="2"/><rect x="9" y="13" width="6" height="15" rx="2"/>
+        <rect x="18" y="7" width="6" height="21" rx="2"/></g>
+        <rect x="27" y="1" width="6" height="27" rx="2" fill="#BBB6AE"/></svg>
+      <svg width="34" height="28" viewBox="0 0 34 26" fill="none" stroke="#111" stroke-width="3.4"
+        stroke-linecap="round"><path d="M3 9.5a21 21 0 0 1 28 0"/><path d="M9 16a12.5 12.5 0 0 1 16 0"/>
+        <circle cx="17" cy="22.5" r="2.6" fill="#111" stroke="none"/></svg>
+      <svg width="52" height="27" viewBox="0 0 52 27"><rect x="0" y="0" width="47" height="27" rx="9" fill="#111"/>
+        <path d="M49 9v9a5 5 0 0 0 0-9z" fill="#111" opacity=".45"/>
+        <text x="23.5" y="19.6" font-family="Outfit" font-size="15" font-weight="700" fill="#fff"
+          text-anchor="middle">100</text></svg>
+    </div>
+  </div>
+
+  <!-- ============================================================ HOME -->
+  <div class="scene" id="home">
+    <div class="topbar">
+      <img class="bird" src="__BIRD__">
+      <div class="word">UTern</div>
+      <div class="sep"></div>
+      <div class="home ui">HOME</div>
+      <div class="me"><img src="__BOB__"></div>
+    </div>
+    <div class="hero">
+      <img src="__BOB__">
+      <h1>Good evening.</h1>
+      <p class="ui">What are we working on?</p>
+    </div>
+    <div class="pill">
+      <div class="txtwrap"><div class="row" id="inrow">
+        <span class="txt ui" id="typed"></span><span class="caret" id="caret"></span>
+      </div></div>
+      <div class="send" id="send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8A857D" stroke-width="2.6"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ CHAT -->
+  <div class="scene" id="chat">
+    <div class="hdr">
+      <div class="av"><img src="__BOB__"></div>
+      <div>
+        <div class="name">Bob</div>
+        <div class="sub ui" id="hdrsub">Here when you need me</div>
+        <div id="hdrdots"><i></i><i></i><i></i></div>
+      </div>
+      <div class="btns">
+        <div class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L20 8l-4-4L4 16v4z"/></svg></div>
+        <div class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.2"
+          stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+      </div>
+    </div>
+    <div id="viewport"><div id="feed"></div></div>
+  </div>
+
+  <!-- ========================================================= CLOSING -->
+  <div class="scene" id="closing">
+    <div class="rule"></div>
+    <h2>Ten minutes tonight.<br>You’ll walk in ready.</h2>
+  </div>
+
+  <!-- ========================================================= ENDCARD -->
+  <div class="scene" id="endcard">
+    <div class="glow"></div>
+    <div class="in">
+      <img class="bob" src="__BOB__">
+      <div class="eyebrow">INTERVIEW TOMORROW?</div>
+      <h2>Bob will run you<br>through it tonight.</h2>
+      <div class="cta ui">Practice at <b>utern.ai</b></div>
+      <div class="mark"><img src="__BIRD__"><span>UTern</span></div>
+    </div>
+  </div>
+
+  <div id="caption"></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const inv=(t,a,b)=>clamp((t-a)/(b-a),0,1);
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const out=t=>1-Math.pow(1-t,3);
+
+const PROMPT="I have an interview tomorrow. Help me prep.";
+const TICK="<span class='tick'><svg viewBox='0 0 24 24' fill='none' stroke='#2E77F1'"+
+  " stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6L9 17l-5-5'/></svg></span>";
+
+const MSGS=[
+ {t:4.30, who:'me',  html:"I have an interview tomorrow. Help me prep."},
+ {t:6.10, who:'bot', typing:[4.95,6.10],
+  html:"What’s the role — and which part are you dreading?"},
+ {t:9.50, who:'me',  html:"Product design intern. I freeze when they ask me to talk about my work."},
+ {t:13.30,who:'bot', typing:[12.15,13.30],
+  html:"That’s recall, not nerves. Pick one project you actually liked — we’ll get it down to ninety seconds."},
+ {t:17.70,who:'me',  html:"The transit app. I rebuilt the whole booking flow."},
+ {t:21.50,who:'bot', typing:[20.35,21.50], card:true, stream:[21.60,29.40], html:
+  "<span class='kicker'>Tonight, out loud, twice:</span><ul>"+
+  "<li>__TICK__<span>What it was, and who it was for.</span></li>"+
+  "<li>__TICK__<span>What <b>you</b> built — not what the team did.</span></li>"+
+  "<li>__TICK__<span>One number, or one detail nobody else would know.</span></li>"+
+  "<li>__TICK__<span>What changed because you did it.</span></li></ul>"},
+];
+
+const CAPTIONS=[
+ ["Interview tomorrow?",          0.20,  3.55],
+ ["Rereading notes isn’t prep.",  3.90,  8.60],
+ ["Freezing up is normal.",       8.60, 13.10],
+ ["Pick one project you liked.", 13.10, 17.60],
+ ["Get it to ninety seconds.",   17.60, 23.20],
+ ["Say it out loud. Twice.",     23.20, 29.20],
+ ["Ten minutes. Then sleep.",    29.20, 33.70],
+];
+
+const T={homeOut:[3.85,4.28], chatIn:[3.95,4.38], chatOut:[33.95,34.35],
+         closeIn:[34.35,34.95], closeOut:[38.00,38.42], endIn:[38.54,39.16]};
+const DURATION=42.6;
+
+/* -------------------------------------------------------------- build */
+const feed=$('#feed'), nodes=[];
+for(const m of MSGS){
+  const w=document.createElement('div');
+  w.className='msg '+(m.who==='me'?'me':'bot');
+  const b=document.createElement('div');
+  b.className='bub ui'+(m.card?' card':'');
+  b.innerHTML=m.html.split('__TICK__').join(TICK);
+  w.appendChild(b); feed.appendChild(w); nodes.push({m,wrap:w,bub:b});
+}
+const typ=document.createElement('div');
+typ.className='typing';
+typ.innerHTML="<div class='box'><i></i><i></i><i></i></div>";
+feed.appendChild(typ);
+
+/* split the final card into words so it can be written out live */
+const cardNode=nodes[nodes.length-1];
+const bits=[];
+(function collect(el){
+  for(const n of [...el.childNodes]){
+    if(n.nodeType===3){
+      const parts=n.textContent.split(/(\s+)/).filter(s=>s.length);
+      const frag=document.createDocumentFragment();
+      for(const p of parts){
+        if(/^\s+$/.test(p)){frag.appendChild(document.createTextNode(p));continue;}
+        const s=document.createElement('span'); s.textContent=p;
+        frag.appendChild(s); bits.push(s);
+      }
+      n.replaceWith(frag);
+    }else if(n.nodeType===1){
+      if(n.classList.contains('tick')){bits.push(n);continue;}
+      collect(n);
+    }
+  }
+})(cardNode.bub);
+
+/* ------------------------------------------------------------ measure */
+const VIEW_H=1160, PAD_BOT=26, MSG_GAP=30;
+let M=[], TYP_H=0, CARD_FULL=0, BIT_BOT=[], CARD_PAD=30;
+
+function measure(){
+  nodes.forEach(n=>{n.wrap.style.display='flex';n.wrap.style.opacity=1;n.wrap.style.transform='none';});
+  bits.forEach(b=>b.style.opacity=1);
+  cardNode.bub.style.height='';
+  typ.style.display='flex';
+  M=nodes.map(n=>({top:n.wrap.offsetTop,h:n.wrap.offsetHeight}));
+  CARD_FULL=cardNode.bub.offsetHeight;
+  BIT_BOT=bits.map(b=>b.offsetTop+b.offsetHeight);
+  // running max so the card only ever grows
+  for(let i=1;i<BIT_BOT.length;i++) BIT_BOT[i]=Math.max(BIT_BOT[i],BIT_BOT[i-1]);
+  TYP_H=typ.offsetHeight;
+  typ.style.display='none';
+}
+
+/* card height for a given time */
+function cardHeight(t){
+  const [s0,s1]=cardNode.m.stream;
+  if(t>=s1) return CARD_FULL;
+  const k=Math.floor(inv(t,s0,s1)*bits.length);
+  if(k<=0) return Math.min(CARD_FULL, CARD_PAD*2+10);
+  return Math.min(CARD_FULL, BIT_BOT[k-1]+CARD_PAD);
+}
+
+function typingAt(t){return MSGS.find(m=>m.typing&&t>=m.typing[0]&&t<m.typing[1]);}
+
+function rawScroll(t){
+  let li=-1;
+  for(let i=0;i<MSGS.length;i++) if(t>=MSGS[i].t) li=i;
+  let bottom=0;
+  if(li>=0){
+    const h=(li===nodes.length-1)?cardHeight(t):M[li].h;
+    bottom=M[li].top+h;
+  }
+  if(typingAt(t)) bottom=(li>=0?M[li].top+M[li].h:0)+MSG_GAP+TYP_H;
+  return Math.max(0,bottom+PAD_BOT-VIEW_H);
+}
+
+let EVENTS=[];
+function buildEvents(){
+  EVENTS=[];
+  for(const m of MSGS){ if(m.typing) EVENTS.push(m.typing[0]); EVENTS.push(m.t); }
+  EVENTS.sort((a,b)=>a-b);
+}
+function scrollAt(t){
+  let e=-1;
+  for(const x of EVENTS) if(t>=x) e=x;
+  if(e<0) return 0;
+  const a=inv(t,e,e+0.55);
+  if(a>=1) return rawScroll(t);
+  return rawScroll(e-0.002)+(rawScroll(t)-rawScroll(e-0.002))*ease(a);
+}
+
+/* --------------------------------------------------------------- seek */
+function seek(t){
+  const homeOp=1-inv(t,T.homeOut[0],T.homeOut[1]);
+  const chatOp=inv(t,T.chatIn[0],T.chatIn[1])*(1-inv(t,T.chatOut[0],T.chatOut[1]));
+  const cloOp =inv(t,T.closeIn[0],T.closeIn[1])*(1-inv(t,T.closeOut[0],T.closeOut[1]));
+  const endOp =inv(t,T.endIn[0],T.endIn[1]);
+  $('#home').style.opacity=homeOp;
+  $('#chat').style.opacity=chatOp;
+  $('#closing').style.opacity=cloOp;
+  $('#endcard').style.opacity=endOp;
+  $('#status').style.opacity=1-endOp;
+
+  /* home: type the prompt, input scrolls with the caret */
+  const n=Math.round(inv(t,0.55,3.30)*PROMPT.length);
+  const typed=$('#typed');
+  if(n===0){typed.textContent="What’s due next?";typed.classList.add('ph');}
+  else{typed.textContent=PROMPT.slice(0,n);typed.classList.remove('ph');}
+  const avail=$('#home .txtwrap').clientWidth, roww=$('#inrow').scrollWidth;
+  $('#inrow').style.transform=`translateX(${Math.min(0,avail-roww)}px)`;
+  $('#caret').style.opacity=t<3.50?(Math.floor(t*1.7)%2?0.15:1):0;
+  const armed=n>0;
+  $('#send').style.background=armed?'#2E77F1':'#E9E5DF';
+  $('#send').querySelector('svg').style.stroke=armed?'#fff':'#8A857D';
+  $('#home .pill').style.borderColor=armed?'#BCD0F7':'#DDD8D1';
+
+  /* chat */
+  nodes.forEach(nd=>{
+    const a=inv(t,nd.m.t,nd.m.t+0.42), e=out(a);
+    nd.wrap.style.display=a>0?'flex':'none';
+    nd.wrap.style.opacity=e;
+    nd.wrap.style.transform=`translateY(${(1-e)*26}px)`;
+  });
+  cardNode.bub.style.height=cardHeight(t)+'px';
+  const [s0,s1]=cardNode.m.stream, k=inv(t,s0,s1)*bits.length;
+  bits.forEach((el,i)=>{el.style.opacity=clamp(k-i,0,1);});
+
+  const tm=typingAt(t);
+  typ.style.display=tm?'flex':'none';
+  if(tm){
+    typ.style.opacity=out(inv(t,tm.typing[0],tm.typing[0]+0.28))*(1-inv(t,tm.typing[1]-0.14,tm.typing[1]));
+    [...typ.querySelectorAll('i')].forEach((d,i)=>{
+      const ph=(t*2.1-i*0.2)%1; d.style.opacity=0.3+0.7*Math.max(0,Math.sin(ph*Math.PI));});
+  }
+  const busy=!!tm||(t>=s0&&t<s1);
+  $('#hdrsub').style.display=busy?'none':'block';
+  $('#hdrdots').style.display=busy?'flex':'none';
+  if(busy)[...$('#hdrdots').children].forEach((d,i)=>{
+    const ph=(t*2.1-i*0.2)%1; d.style.opacity=0.3+0.7*Math.max(0,Math.sin(ph*Math.PI));});
+
+  feed.style.transform=`translateY(${-scrollAt(t)}px)`;
+
+  /* caption */
+  const cap=CAPTIONS.find(c=>t>=c[1]&&t<c[2]);
+  const el=$('#caption');
+  if(!cap){el.style.opacity=0;}
+  else{
+    el.innerHTML=cap[0];
+    const a=out(inv(t,cap[1],cap[1]+0.34));
+    el.style.opacity=a*(1-inv(t,cap[2]-0.26,cap[2]));
+    el.style.transform=`translateY(${(1-a)*10}px)`;
+  }
+}
+
+window.__ready=false;
+window.seek=seek;
+window.__duration=DURATION;
+document.fonts.ready.then(()=>{
+  measure(); buildEvents(); seek(0);
+  requestAnimationFrame(()=>{window.__ready=true;});
+});
+</script>
