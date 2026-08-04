@@ -93,30 +93,39 @@ const DEEP  = '#1B4FB0';          // darker blue for depth accents
 const FPS = 30, DUR = 10.40;
 
 /* Every cut sits on a measured onset in the soundtrack rather than on a
-   metronome grid — the track's hits are not evenly spaced. Onsets arrive in
-   pairs about 0.12s apart (hit + flam); these are the strong one of each pair.
-   The music ends naturally at ~9.2s, so the logo takes the last hit that still
-   has music ringing under it. */
+   metronome grid — the track's hits are not evenly spaced. Raw detection finds
+   43 onsets, but they pair up ~0.12s apart with matching spectra: a flam, heard
+   as one accented hit. Merging each pair gives 23 real events, and every one of
+   them gets a card. The music ends at ~9.2s. */
 const CUT = [
-  0.145,  // We
+  0.020,  // We
   0.595,  // don't
   1.280,  // just
   1.845,  // find
-  2.410,  // you
+  2.280,  // you
   2.905,  // internships
-  3.835,  // we
-  4.235,  // match
-  5.030,  // you with
-  5.320,  // companies
-  6.045,  // and
-  6.400,  // prove
+  3.280,  // on
+  3.835,  // a
+  4.235,  // job
+  4.670,  // board
+  5.030,  // We
+  5.320,  // find
+  5.785,  // you
+  6.045,  // matches
+  6.400,  // to
+  6.690,  // companies
   7.115,  // that
-  7.435,  // you're
-  7.615,  // ready.
-  8.485,  // with
-  8.745,  // logo
+  7.320,  // prove   (7.320 and 7.435 are near-equal hits; taking the earlier
+          //          one buys "prove" 0.295s instead of 0.180s and puts the
+          //          squeeze on "that", which is only a connector)
+  7.615,  // you
+  8.015,  // are
+  8.220,  // ready
+  8.745,  // logo — reveal
+  9.010,  // logo — punch (last hit before the music ends at 9.20)
 ];
-const DROP = CUT[16];             // 8.745s — logo lands here
+const DROP  = CUT[21];            // 8.745s — logo reveal
+const BEAT2 = CUT[22];            // 9.010s — second logo beat
 
 /* ================= easing ================= */
 const cl = (x,a=0,b=1) => Math.min(b, Math.max(a,x));
@@ -127,31 +136,43 @@ const inQuad   = x => x*x;
 const outQuad  = x => 1-(1-x)*(1-x);
 const mix = (a,b,x) => a+(b-a)*x;
 
+/* Per-letter stagger, shortened so the LAST letter still finishes inside the
+   card. Without this a 9-letter word on a 0.4s card loses its final letters. */
+const fitStagger = (want, anim, n, hold) =>
+  n < 2 ? 0 : Math.max(0, Math.min(want, (hold*0.92 - anim) / (n-1)));
+
 /* ================= beat sheet =================
-   18 words: We / don't / just / find / you / internships /
-             we / match / you / with / companies / and /
-             prove / that / you're / ready / with / UTern(logo)          */
+   21 words, one per musical event:
+     We don't just find you internships on a job board
+     We find you matches to companies that prove you are ready
+   then the logo takes the final two events.                            */
 const CARDS = [
   { w:'We',           bg:'w', fx:'punch',     size:330 },
   { w:'don’t',        bg:'b', fx:'wipeL',     size:330 },
   { w:'just',         bg:'w', fx:'rise',      size:330, whip:1, whipY:-330 },
   { w:'find',         bg:'b', fx:'letterDrop',size:330 },
-  { w:'you',          bg:'w', fx:'snap',      size:270 },
-  /* the two long words are deliberately oversized — auto-fit pins them to the
-     safe width so they fill the frame like the short words do */
+  { w:'you',          bg:'w', fx:'snap',      size:330 },
+  /* long words are deliberately oversized — auto-fit pins them to the safe
+     width so they fill the frame like the short ones do */
   { w:'internships',  bg:'b', fx:'trackIn',   size:220, rule:1 },
-  { w:'we',           bg:'w', fx:'fadeSm',    size:210 },
-  { w:'match',        bg:'b', fx:'converge',  size:320 },
-  { w:'you with',     bg:'w', fx:'slideR',    size:215 },
+  { w:'on',           bg:'w', fx:'fadeSm',    size:300 },
+  { w:'a',            bg:'b', fx:'snap',      size:430 },
+  { w:'job',          bg:'w', fx:'flip',      size:330 },
+  { w:'board',        bg:'b', fx:'wipeUp',    size:310, whip:1, whipY:320 },
+  { w:'We',           bg:'w', fx:'fadeSm',    size:300 },
+  { w:'find',         bg:'b', fx:'slideR',    size:320 },
+  { w:'you',          bg:'w', fx:'snap',      size:300 },
+  /* two halves slide together — the motion says what the word says */
+  { w:'matches',      bg:'b', fx:'converge',  size:280 },
+  { w:'to',           bg:'w', fx:'fadeSm',    size:300 },
   { w:'companies',    bg:'b', fx:'letterPop', size:240, whip:1, whipY:300 },
-  { w:'and',          bg:'w', fx:'flip',      size:250, whip:1, whipY:-300 },
-  { w:'prove',        bg:'b', fx:'stamp',     size:310 },
-  { w:'that',         bg:'w', fx:'wipeUp',    size:250 },
-  { w:'you’re',       bg:'b', fx:'wipeDn',    size:250 },
-  /* holds across two more hits (8.015, 8.220) — it pulses on each so the
+  { w:'that',         bg:'w', fx:'wipeDn',    size:280 },
+  { w:'prove',        bg:'b', fx:'stamp',     size:320 },
+  { w:'you',          bg:'w', fx:'snap',      size:300 },
+  { w:'are',          bg:'b', fx:'wipeUp',    size:300 },
+  /* holds across two more hits (8.485, 8.600) — it pulses on each so the
      climax word punches with the track instead of sitting still */
-  { w:'ready.',       bg:'w', fx:'hero',      size:330, rule:1, pulses:[8.015, 8.220] },
-  { w:'with',         bg:'b', fx:'anticip',   size:225 },
+  { w:'ready',        bg:'w', fx:'hero',      size:340, rule:1, pulses:[8.485, 8.600] },
 ];
 CARDS.forEach((c,i) => { c.t0 = CUT[i]; c.t1 = CUT[i+1]; });
 
@@ -249,8 +270,13 @@ function renderFrame(t){
     let c = CARDS[0];
     for (const k of CARDS) if (t >= k.t0) c = k;
     const idx = CARDS.indexOf(c);
-    const lt = t - c.t0;                       // seconds since card start
-    const p  = cl(lt / (c.t1 - c.t0));         // normalised progress
+    const lt   = t - c.t0;                     // seconds since card start
+    const hold = c.t1 - c.t0;
+    const p    = cl(lt / hold);                // normalised progress
+    /* Cards run as short as 6 frames, so an animation's natural duration can
+       outlast the card that plays it. D() caps every duration at 55% of the
+       hold: on long cards nothing changes, on short ones everything snaps. */
+    const D = d => Math.min(d, hold * 0.55);
 
     const light = c.bg === 'w';
     const paper = light ? WHITE : BLUE;
@@ -277,72 +303,73 @@ function renderFrame(t){
     switch (c.fx) {
 
       case 'punch': {
-        const e = outExpo(cl(lt/0.22));
+        const e = outExpo(cl(lt/D(0.22)));
         tf = `scale(${mix(1.55,breathe,e)})`;
-        c.lineEl.style.filter = `blur(${mix(20,0,cl(lt/0.16))}px)`;
-        c.lineEl.style.opacity = cl(lt/0.07);
+        c.lineEl.style.filter = `blur(${mix(20,0,cl(lt/D(0.16)))}px)`;
+        c.lineEl.style.opacity = cl(lt/D(0.07));
         break;
       }
 
       case 'wipeL': {
-        const e = outExpo(cl(lt/0.24));
+        const e = outExpo(cl(lt/D(0.24)));
         c.lineEl.style.clipPath = `inset(-30% ${mix(100,0,e)}% -30% -30%)`;
         tf = `translateX(${mix(-70,0,e)}px) scale(${breathe})`;
         break;
       }
 
       case 'rise': {
-        const e = outBack(cl(lt/0.34));
+        const e = outBack(cl(lt/D(0.34)));
         tf = `translateY(${mix(160,0,e)}px) scale(${breathe})`;
-        c.lineEl.style.opacity = cl(lt/0.06);
+        c.lineEl.style.opacity = cl(lt/D(0.06));
         break;
       }
 
       case 'letterDrop': {
+        const an = D(0.30), stg = fitStagger(0.035, an, c.ltrs.length, hold);
         c.ltrs.forEach((s,i) => {
-          const e = outBack(cl((lt - i*0.035)/0.30));
+          const e = outBack(cl((lt - i*stg)/an));
           s.style.transform = `translateY(${mix(-150,0,e)}px)`;
-          s.style.opacity = cl((lt - i*0.035)/0.05);
+          s.style.opacity = cl((lt - i*stg)/D(0.05));
         });
         break;
       }
 
       case 'snap': {
-        const e = outBack(cl(lt/0.17), 2.6);
+        const e = outBack(cl(lt/D(0.17)), 2.6);
         tf = `scale(${mix(0.5,breathe,e)})`;
-        c.lineEl.style.opacity = cl(lt/0.05);
+        c.lineEl.style.opacity = cl(lt/D(0.05));
         break;
       }
 
       case 'trackIn': {
         // letters start wide-tracked and tighten. The extra tracking is paid for
         // with a smaller start scale so the word never runs past the frame edge.
-        const e = outExpo(cl(lt/0.52));
+        const e = outExpo(cl(lt/D(0.52)));
         c.lineEl.style.letterSpacing = mix(0.16,-0.035,e).toFixed(4)+'em';
-        c.lineEl.style.opacity = cl(lt/0.12);
-        c.lineEl.style.filter = `blur(${mix(9,0,cl(lt/0.3))}px)`;
+        c.lineEl.style.opacity = cl(lt/D(0.12));
+        c.lineEl.style.filter = `blur(${mix(9,0,cl(lt/D(0.3)))}px)`;
         tf = `scale(${mix(0.80,breathe,e)})`;
         break;
       }
 
       case 'fadeSm': {
-        const e = outExpo(cl(lt/0.18));
+        const e = outExpo(cl(lt/D(0.18)));
         tf = `scale(${mix(0.86,breathe,e)})`;
-        c.lineEl.style.opacity = cl(lt/0.07);
+        c.lineEl.style.opacity = cl(lt/D(0.07));
         break;
       }
 
       case 'converge': {
-        const e = outExpo(cl(lt/0.28));
+        const e = outExpo(cl(lt/D(0.28)));
         const off = mix(420,0,e);
         [['halfL',-1],['halfR',1]].forEach(([k,dir]) => {
           const h = c[k];
           h.style.color = ink;
           h.style.transform = `translate(calc(-50% + ${dir*off}px), -50%) scale(${breathe})`;
-          h.style.opacity = cl(lt/0.05);
+          h.style.opacity = cl(lt/D(0.05));
         });
         // seam flashes at the moment the halves meet
-        const s = c.seamEl, sp = cl((lt-0.20)/0.26);
+        const s = c.seamEl, sp = cl((lt-D(0.20))/D(0.26));
         s.style.background = ink;
         s.style.left='50%'; s.style.top='50%';
         s.style.height = mix(40, c.size*1.5, outExpo(sp))+'px';
@@ -352,33 +379,34 @@ function renderFrame(t){
       }
 
       case 'slideR': {
-        const e = outExpo(cl(lt/0.22));
+        const e = outExpo(cl(lt/D(0.22)));
         tf = `translateX(${mix(260,0,e)}px) scale(${breathe})`;
-        c.lineEl.style.opacity = cl(lt/0.06);
-        c.lineEl.style.filter = `blur(${mix(14,0,cl(lt/0.14))}px)`;
+        c.lineEl.style.opacity = cl(lt/D(0.06));
+        c.lineEl.style.filter = `blur(${mix(14,0,cl(lt/D(0.14)))}px)`;
         break;
       }
 
       case 'letterPop': {
+        const an2 = D(0.26), stg2 = fitStagger(0.028, an2, c.ltrs.length, hold);
         c.ltrs.forEach((s,i) => {
-          const e = outBack(cl((lt - i*0.028)/0.26), 2.4);
+          const e = outBack(cl((lt - i*stg2)/an2), 2.4);
           s.style.transform = `scale(${mix(0.1,1,e)})`;
-          s.style.opacity = cl((lt - i*0.028)/0.04);
+          s.style.opacity = cl((lt - i*stg2)/D(0.04));
         });
         break;
       }
 
       case 'flip': {
-        const e = outExpo(cl(lt/0.20));
+        const e = outExpo(cl(lt/D(0.20)));
         tf = `perspective(1400px) rotateX(${mix(-92,0,e)}deg) scale(${breathe})`;
-        c.lineEl.style.opacity = cl(lt/0.05);
+        c.lineEl.style.opacity = cl(lt/D(0.05));
         break;
       }
 
       case 'stamp': {
-        const e = outExpo(cl(lt/0.15));
+        const e = outExpo(cl(lt/D(0.15)));
         tf = `scale(${mix(2.3,breathe,e)})`;
-        c.lineEl.style.opacity = cl(lt/0.03);
+        c.lineEl.style.opacity = cl(lt/D(0.03));
         // impact shake
         if (lt < 0.14) {
           const d = (1 - lt/0.14) * 16;
@@ -386,7 +414,7 @@ function renderFrame(t){
         }
         // expanding rings on impact
         RINGS.forEach((r,i) => {
-          const rp = cl((lt - i*0.075)/0.62);
+          const rp = cl((lt - i*D(0.075))/D(0.62));
           if (rp<=0 || rp>=1) { r.style.opacity=0; return; }
           const q = outQuint(rp), sz = mix(120,1500,q);
           r.style.width=sz+'px'; r.style.height=sz+'px';
@@ -398,21 +426,21 @@ function renderFrame(t){
       }
 
       case 'wipeUp': {
-        const e = outExpo(cl(lt/0.20));
+        const e = outExpo(cl(lt/D(0.20)));
         c.lineEl.style.clipPath = `inset(${mix(100,-30,e)}% -30% -30% -30%)`;
         tf = `translateY(${mix(50,0,e)}px) scale(${breathe})`;
         break;
       }
 
       case 'wipeDn': {
-        const e = outExpo(cl(lt/0.20));
+        const e = outExpo(cl(lt/D(0.20)));
         c.lineEl.style.clipPath = `inset(-30% -30% ${mix(100,-30,e)}% -30%)`;
         tf = `translateY(${mix(-50,0,e)}px) scale(${breathe})`;
         break;
       }
 
       case 'hero': {
-        const e = outBack(cl(lt/0.32), 1.5);
+        const e = outBack(cl(lt/D(0.32)), 1.5);
         // kick on each onset this card holds across
         let pulse = 0;
         (c.pulses||[]).forEach(pt => {
@@ -420,16 +448,16 @@ function renderFrame(t){
           if (q >= 0 && q < 1) pulse += (1 - outQuad(q)) * 0.06;
         });
         tf = `scale(${mix(0.55, breathe*1.02, e) * (1 + pulse)})`;
-        c.lineEl.style.opacity = cl(lt/0.05);
+        c.lineEl.style.opacity = cl(lt/D(0.05));
         break;
       }
 
       case 'anticip': {
         // pull back and dim — loads tension into the drop
-        const e = outExpo(cl(lt/0.20));
-        const pull = 1 - cl((lt-0.22)/0.46)*0.10;
+        const e = outExpo(cl(lt/D(0.20)));
+        const pull = 1 - cl((lt-D(0.22))/D(0.46))*0.10;
         tf = `scale(${mix(1.25,1,e)*pull})`;
-        c.lineEl.style.opacity = cl(lt/0.06);
+        c.lineEl.style.opacity = cl(lt/D(0.06));
         break;
       }
     }
@@ -438,7 +466,7 @@ function renderFrame(t){
 
     /* rule sweep under the emphasis words */
     if (c.ruleEl) {
-      const r = c.ruleEl, rp = outExpo(cl((lt-0.26)/0.38));
+      const r = c.ruleEl, rp = outExpo(cl((lt-D(0.26))/D(0.38)));
       const wpx = c.wpx * rp;
       r.style.background = ink;
       r.style.width = wpx+'px';
@@ -450,7 +478,7 @@ function renderFrame(t){
     /* speed streak across selected cuts — a gradient trail reads as motion,
        where a hard bar just flickers past in two frames */
     if (c.whip) {
-      const wp = cl(lt/0.42);
+      const wp = cl(lt/D(0.42));
       const wEl = $('whip');
       if (wp>0 && wp<1) {
         const e = outQuad(wp);
@@ -484,19 +512,25 @@ function renderFrame(t){
     // hard white flash on the hit, then gone in 3 frames
     flash.style.opacity = cl(1 - lt/0.10);
 
-    // logo: scale-in + left-to-right reveal
-    const e  = outBack(cl(lt/0.44), 1.35);
-    const rv = outExpo(cl(lt/0.42));
-    const drift = 1 + cl((lt-0.5)/2.6)*0.035;         // slow push-in so it never sits still
+    /* The logo gets the last two musical events, not one:
+       8.745 reveals it, 9.010 punches it and brings in the lockup below. */
+    const lt2 = t - BEAT2;                            // <0 until the second beat
+
+    // beat 1 — scale-in + left-to-right reveal, settled before the punch lands
+    const e  = outBack(cl(lt/0.26), 1.35);
+    const rv = outExpo(cl(lt/0.24));
+    const kick  = lt2 >= 0 ? (1 - outQuad(cl(lt2/0.22))) * 0.085 : 0;   // beat 2
+    const drift = 1 + cl((lt-0.6)/2.4)*0.03;          // slow push-in so it never sits still
     const logo = $('logo');
-    logo.style.transform = `scale(${mix(0.62,1,e)*drift})`;
+    logo.style.transform = `scale(${mix(0.62,1,e) * drift * (1+kick)})`;
     logo.style.clipPath = `inset(-20% ${mix(100,-20,rv)}% -20% -20%)`;
     logo.style.opacity = cl(lt/0.05);
 
-    // burst rings off the drop
+    // a ring burst on each of the two beats
     RINGS.forEach((r,i) => {
-      const rp = cl((lt - i*0.10)/0.95);
-      if (rp<=0 || rp>=1) { r.style.opacity=0; return; }
+      const src = (i < 2) ? lt : lt2;                 // 2 rings on beat 1, 1 on beat 2
+      const rp = cl((src - (i%2)*0.10)/0.85);
+      if (src < 0 || rp<=0 || rp>=1) { r.style.opacity=0; return; }
       const q = outQuint(rp), sz = mix(200,2100,q);
       r.style.width=sz+'px'; r.style.height=sz+'px';
       r.style.borderWidth = mix(16,1,q)+'px';
@@ -504,16 +538,17 @@ function renderFrame(t){
       r.style.opacity = (1-rp)*0.42;
     });
 
-    // rule + tagline land on the track's closing hits
-    const rp = outExpo(cl((lt-0.50)/0.40));
+    // rule + tagline snap in on the second beat
+    const rp = outExpo(cl(lt2/0.30));
     $('tagrule').style.width = (300*rp)+'px';
     $('tagrule').style.opacity = rp>0?0.9:0;
-    const tp = cl((lt-0.62)/0.34);
+    const tp = cl((lt2-0.10)/0.28);
     $('tag').style.opacity = tp;
     $('tag').style.transform = `translateY(${mix(26,0,outExpo(tp))}px)`;
 
-    // shake on impact
-    if (lt < 0.16) { const d=(1-lt/0.16)*20; shakeX=Math.sin(lt*160)*d; shakeY=Math.cos(lt*133)*d; }
+    // shake on each impact
+    if (lt  < 0.16) { const d=(1-lt /0.16)*20; shakeX=Math.sin(lt *160)*d; shakeY=Math.cos(lt *133)*d; }
+    if (lt2 >= 0 && lt2 < 0.12) { const d=(1-lt2/0.12)*13; shakeX+=Math.sin(lt2*170)*d; shakeY+=Math.cos(lt2*140)*d; }
 
     hud.style.opacity = 0;
   }

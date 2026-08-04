@@ -3,8 +3,8 @@
 Kinetic-typography hook for UTern. 1080×1920, 30fps, 10.40s.
 Output lives at `img/utern/utern-hook-9x16.mp4` (poster: `utern-hook-poster.jpg`).
 
-**Script (18 words):**
-> We don't just find you internships — we match you with companies and prove that you're ready. With UTern.
+**Script (21 words, one per musical event):**
+> We don't just find you internships on a job board. We find you matches to companies that prove you are ready.
 
 ## How it works
 
@@ -19,30 +19,40 @@ the frames with ffmpeg.
 
 ## Timing
 
-Every cut sits on a **measured onset** in the soundtrack, not on a metronome
-grid — the track's hits are not evenly spaced, so a fitted BPM grid drifts off
-them. Onsets were extracted by spectral flux at 5ms resolution; they arrive in
-pairs roughly 0.12s apart (hit plus flam), and the cuts take the stronger one of
-each pair. The result is the `CUT` array in `scene.html`:
+Every cut sits on a **measured onset**, not a metronome grid — the track's hits
+are not evenly spaced, so a fitted BPM grid drifts off them.
 
-```js
-const CUT = [0.145, 0.595, 1.280, 1.845, 2.410, 2.905, 3.835, 4.235,
-             5.030, 5.320, 6.045, 6.400, 7.115, 7.435, 7.615, 8.485, 8.745];
-```
+Spectral flux at 5ms resolution finds 43 onsets, but they pair up ~0.12s apart.
+Comparing the spectra of each pair shows both halves are the same sound with the
+second 2–3x louder: a flam, heard as one accented hit. Merging the pairs gives
+**23 real musical events**, and every one of them gets a card — 21 words plus two
+for the logo. That is the `CUT` array in `scene.html`.
 
-Card *i* runs from `CUT[i]` to `CUT[i+1]`. Emphasis words skip an onset so they
-hold longer; connectors take a single short interval. Measured against the
-encoded file, every cut lands within one frame of its onset (33ms at 30fps).
+Card *i* runs from `CUT[i]` to `CUT[i+1]`, so cards are as short as 6 frames.
+Measured against the encoded file, every cut lands within one frame of its onset
+(33ms at 30fps).
 
-`ready.` holds across two further onsets (8.015, 8.220) and takes a scale pulse
-on each, so the climax word punches with the track rather than sitting still.
+Where a pair's two halves are near-equal in strength, either can anchor the cut.
+`prove` uses the earlier 7.320 rather than 7.435, which buys it 0.295s instead of
+0.180s and puts the squeeze on `that`, a connector.
+
+`ready` holds across two further onsets (8.485, 8.600) and takes a scale pulse on
+each, so the climax word punches with the track rather than sitting still.
+
+### Short cards
+
+Because a card can be shorter than an animation's natural duration, `D(d)` caps
+every duration at 55% of the card's hold — long cards are unaffected, short ones
+snap. `fitStagger()` does the same for per-letter animations, shrinking the
+stagger so the last letter of a 9-letter word still lands before the cut.
 
 ### Audio
 
 The music ends by itself at ~9.2s. Everything after that in the reference clip
-is that video's own outro sting, so `build.sh` trims the track at 9.25s. The
-logo lands at 8.745 — the last hit with music still ringing under it — and the
-card plays out silent.
+is that video's own outro sting, so `build.sh` trims the track at 9.25s.
+
+The logo takes the last **two** events: 8.745 reveals it, and 9.010 punches it
+and brings in the lockup below. The card then plays out silent.
 
 ## Editing the copy
 
