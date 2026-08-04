@@ -32,9 +32,11 @@ set in `SRC` at the top of the script).
   space under the chat (y1512–1711), with a small blue rule instead of a
   full-width gradient. No caption runs longer than 8.4s; the source held one
   for 25s.
-- **New copy** — an interview-prep script (rehearse out loud → the question
-  they always ask → why people freeze → three rules → walk in ready), timed so
-  each rule lands on the matching moment in the conversation.
+- **New copy** — interview-skills coaching: practice out loud → in your head
+  doesn't count → five rules (answer what they asked, say I not we, details
+  beat adjectives, end with the result, then stop talking). The app demo runs
+  underneath as b-roll; the rules are timed so each lands on the matching
+  moment in the conversation.
 - **Re-scripted closing callout** and a dissolve straight into the brand card,
   skipping the source's wipe (which briefly re-revealed the washed app and
   brought the old caption slab back) and the half second of empty canvas

@@ -81,17 +81,20 @@ def tracked(draw, xy, text, fnt, fill, track=0):
 # ------------------------------------------------------------------ the script
 #   (eyebrow, [headline lines], out_start, out_end)   times in OUTPUT seconds
 CAPTIONS = [
-    ("BEFORE THE INTERVIEW", ["Rehearse out loud."],              0.20,  3.80),
-    ("THEY ALWAYS ASK",      ["Tell me about", "a project."],     3.80,  8.20),
-    ("WHY PEOPLE FREEZE",    ["They never said it", "out loud."], 8.20, 12.60),
-    ("RULE ONE",             ["Say I, not we."],                 12.60, 21.00),
-    ("RULE TWO",             ["Details beat", "adjectives."],    21.00, 29.00),
-    ("RULE THREE",           ["End with the result."],           29.00, 35.80),
-    ("WALK IN READY",        ["You know", "your own story."],    35.80, 40.90),
+    ("BEFORE THE INTERVIEW",      ["Practice out loud."],                 0.20,  3.80),
+    ("IN YOUR HEAD DOESN'T COUNT", ["You need to hear",
+                                    "yourself say it."],                  3.80,  8.20),
+    ("RULE ONE",                  ["Answer what", "they asked."],         8.20, 12.60),
+    ("RULE TWO",                  ["Say I, not we."],                    12.60, 21.00),
+    ("RULE THREE",                ["Details beat", "adjectives."],       21.00, 29.00),
+    ("RULE FOUR",                 ["End with the result."],              29.00, 35.80),
+    ("RULE FIVE",                 ["Then stop talking."],                35.80, 40.90),
 ]
 
 RULE_Y, RULE_X, RULE_W, RULE_H = 1512, 64, 76, 7
 EYE_Y, HEAD_Y, LH = 1552, 1622, 88
+
+MAX_TEXT_W = W - RULE_X - 56          # keep the right margin honest
 
 def render_caption(eyebrow, lines):
     """Pre-render one caption block as an RGBA layer."""
@@ -100,6 +103,8 @@ def render_caption(eyebrow, lines):
     d.rectangle([RULE_X, RULE_Y, RULE_X + RULE_W, RULE_Y + RULE_H], fill=BLUE + (255,))
     tracked(d, (RULE_X, EYE_Y), eyebrow, F_EYE, BLUE + (255,), track=3.4)
     for i, ln in enumerate(lines):
+        w = d.textlength(ln, font=F_HEAD)
+        assert w <= MAX_TEXT_W, f"headline too wide ({w:.0f}px): {ln!r}"
         d.text((RULE_X - 4, HEAD_Y + i * LH), ln, font=F_HEAD, fill=INK + (255,))
     return np.asarray(layer).astype(float)
 
@@ -134,7 +139,7 @@ def composite(img, layer, op, dy, y0):
 # ------------------------------------------------------ closing callout rescript
 # The source's own callout keeps its blue rule at y804-809; only its three
 # lines of product copy (rows 856-1114) get painted out and rewritten.
-CLOSE_LINES = ["Now you have an answer", "worth saying out loud."]
+CLOSE_LINES = ["Now you have answers", "worth saying out loud."]
 CLOSE_TOP, CLOSE_BOT, CLOSE_FEATHER = 822, 1178, 30
 CLOSE_X, CLOSE_Y, CLOSE_LH = 60, 852, 96
 
