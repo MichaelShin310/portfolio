@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Michael Shin">
+  <rect width="64" height="64" fill="#050505"/>
+  <path d="M12 47V17h6.4l13.6 19.4L45.6 17H52v30h-6V28.4L32.6 47h-1.2L18 28.4V47z" fill="#f6f5f1"/>
+  <rect x="12" y="52" width="40" height="3" fill="#ff4d00"/>
+</svg>
