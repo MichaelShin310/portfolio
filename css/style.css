@@ -320,6 +320,10 @@ section { padding: clamp(3.5rem, 8vw, 7rem) 0; }
 
 .card .ph.has-img.contain img { background: transparent; }
 
+/* The full-width lead card: the mark reads as a masthead, so give it room
+   and let it grow on narrow screens where the frame is already small. */
+.card-wide .ph.lead-mark img { padding: 8% 27%; }
+
 .card-meta { margin-top: 1.15rem; }
 
 .card-meta .label { display: block; margin-bottom: 0.5rem; }
@@ -520,6 +524,9 @@ section { padding: clamp(3.5rem, 8vw, 7rem) 0; }
 /* A captioned image block (figure + caption) that sits in a media grid. */
 .media-item { min-width: 0; }
 .media-item .ph { width: 100%; }
+
+/* The case-study hero mark, inset on its plate. */
+.ph.hero-mark img { padding: 6% 12%; }
 
 /* Tall portrait presentation boards: constrain to a readable centered
    column so a full sheet doesn't dominate the page. */
@@ -1039,6 +1046,15 @@ code {
 
 @media (max-width: 560px) {
   .photo-grid { columns: 1; }
+  .card-wide .ph.lead-mark img { padding: 6% 15%; }
+  /* Four stacked lists ran to four screens; two columns keeps it one glance. */
+  .stack { grid-template-columns: 1fr 1fr; }
+  .stack-group { padding: 1.25rem 1rem 1.5rem; }
+  .stack-group li { font-size: 0.88rem; }
+  .stack-group ul { gap: 0.45rem; }
+  .card-meta p { font-size: 0.98rem; }
+  .hero-ctas { gap: 0.75rem; }
+  .hero-ctas .btn { flex: 1 1 100%; text-align: center; }
   .status-strip .wrap { grid-template-columns: 1fr; }
   .status-strip .fact { border-right: none; margin-right: 0; padding-right: 0; }
   .build-item { grid-template-columns: 1fr; gap: 0.5rem; }
