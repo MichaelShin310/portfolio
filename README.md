@@ -20,6 +20,10 @@ css/style.css       All styling (design tokens at the top in :root)
 js/main.js          Scroll reveal, the scroll-scrubbed opener, the architecture
                     accordion
 favicon.svg         Monogram
+img/og/             1200x630 share cards (generated, see below)
+tools/              make-og-cards.py
+sitemap.xml
+robots.txt
 ```
 
 Work order on the homepage: **UTern first** (full-width lead card), then
@@ -54,6 +58,39 @@ UTern.
 - `.about-facts` — the sticky facts panel on the About page.
 - `.status-strip .fact` — the four-fact credential row under the homepage hero.
 
+## Domain, share cards and search
+
+The canonical domain is **michaelshinstudio.com**. It is hard-coded in three
+places — change all three together if it ever moves:
+
+- `<link rel="canonical">` and `og:url` / `og:image` in each page head
+- `SITE` in `tools/make-og-cards.py`
+- `sitemap.xml` and `robots.txt`
+
+Page URLs keep their `.html` extension so they resolve on any host, GitHub
+Pages included. If you deploy somewhere that prefers clean URLs (Vercel with
+`cleanUrls`, Netlify's default), drop the extension from the canonicals and the
+sitemap so they don't point through a redirect.
+
+**Share cards** live in `img/og/` at 1200×630 and are generated, not drawn by
+hand:
+
+```
+python tools/make-og-cards.py
+```
+
+The script composites the site's own language — near-black ground, the mono
+`MICHAEL SHIN` eyebrow, display title with an optional orange last word, an
+orange rule, and a project image or logo mark in the right panel. It needs
+Pillow, plus Red Hat Display and IBM Plex Sans (standing in for Space Grotesk
+and Inter Tight, which aren't installed locally) and Consolas for the mono. If
+you install the real fonts, point `F_DISPLAY` / `F_BODY` / `F_MONO` at them and
+re-run.
+
+`sitemap.xml`, `robots.txt`, and a `Person` JSON-LD block on the homepage are
+all in place. Update `lastmod` in the sitemap when the content meaningfully
+changes.
+
 ## Filling in the blanks
 
 - Every hatched frame is gone; `<figure class="ph">` without `has-img` is still
@@ -63,10 +100,10 @@ UTern.
   <figure class="ph has-img" style="--ar: 4/5"><img src="img/…" alt="…" loading="lazy" /></figure>
   ```
   Keep images under ~300KB each (use WebP where you can).
-- **One thing still missing: `og:image`.** Every page has Open Graph title and
-  description, but a share card needs an *absolute* URL, which needs the final
-  domain. Once the site has one, add
-  `<meta property="og:image" content="https://<domain>/img/…" />` to each head.
+- **Logo art is trimmed to its alpha bounds.** `utern-logo-white-trim.png` and
+  `utern-logo-trim.png` exist because the originals carry a large transparent
+  band at the bottom, which made `object-fit: contain` center the canvas
+  instead of the mark. Trim any new logo the same way before framing it.
 
 ## Running locally
 
