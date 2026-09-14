@@ -97,9 +97,19 @@ So the letters read as unlit glass in the dark and light up as the beam
 crosses them.
 
 Timing is eased out, so the sweep crosses the type at a readable pace and the
-crystal then keeps turning slowly right up to the moment the section lets go.
-Nothing ever visibly stops, and there is no point where the shot is frozen
-while you are still pinned.
+crystal then keeps turning right up to the point the section has actually left
+the screen. **The scrub ends at `bottom top`, not `bottom bottom`** — a sticky
+stage still takes a full viewport to slide away after its pin releases, and
+ending at the pin left the clip frozen on its last frame for every pixel of
+that slide. The ease exponent is tuned against that: the beam has cleared the
+type by the time the pin releases (~58% of the track), and the rest of the clip
+plays out while the stage exits.
+
+**Any section that pins a stage must have `padding: 0`.** `.lens`, `.namecard`
+and `.spine` all override the global `section { padding: … 0 }`. With
+border-box that padding offsets the stage inside its own track *and* leaves a
+band of black between one shot and the next — it caused the same visible seam
+twice, in two different sections.
 
 **The lens hands over by dissolve, not by wipe.** `.namecard` is pulled up
 `-100vh` so it sits underneath the lens's last screen, already pinned and full

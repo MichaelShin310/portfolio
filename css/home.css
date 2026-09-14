@@ -282,7 +282,10 @@ html.motion .name-stage:hover::after { opacity: 1; }
 
 /* ---------------- 4 · The spine (architecture) ---------------- */
 
-.spine { position: relative; height: 240vh; }
+/* Scroll track, same as the lens and the name card: the global
+   `section { padding: … 0 }` would offset the pinned stage inside it and leave
+   a band of black between this shot and the one before. */
+.spine { position: relative; height: 240vh; padding: 0; }
 
 .spine-stage {
   position: sticky;

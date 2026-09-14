@@ -327,14 +327,20 @@
         // The card is already pinned and full frame when the lens dissolves
         // off it, so the sweep can start the instant it becomes visible.
         start: "top top",
-        end: "bottom bottom",
+        // Runs until the section has actually left, not until it stops being
+        // pinned. The stage still takes a full viewport to slide away after
+        // the pin releases, and ending at "bottom bottom" left the clip frozen
+        // on its last frame for every pixel of that.
+        end: "bottom top",
         scrub: 0.5
       },
       onUpdate: function () {
-        // Eased out: the sweep crosses the type at a readable pace and then
-        // the crystal keeps turning slowly, so the shot is still moving right
-        // up to the moment the section lets go. Nothing ever visibly stops.
-        var p = 1 - Math.pow(1 - proxy.p, 1.5);
+        // Eased out, tuned so the beam has cleared the type by the time the
+        // pin releases (~58% of this track) and the remaining fraction of the
+        // clip plays out while the stage slides off. The shot is still moving
+        // when it leaves the screen, so there is no frame where it has visibly
+        // stopped.
+        var p = 1 - Math.pow(1 - proxy.p, 2.75);
         var t = 0;
 
         if (ready && bed.duration) {
