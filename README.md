@@ -23,7 +23,9 @@ js/main.js          Inner pages: smooth scroll, arrive, depth, magnetic,
 js/home.js          Homepage: the five motion primitives
 favicon.svg         Monogram
 img/og/             1200x630 share cards (generated, see below)
-tools/              make-og-cards.py
+resume/resume.html  Résumé source of truth (prints to one Letter page)
+tools/              make-og-cards.py · extract-app-icons.ps1 · trace-beam.py
+                    · build-resume.ps1
 sitemap.xml
 robots.txt
 ```
@@ -174,6 +176,22 @@ script left every one of these pages completely blank.
 
 The architecture accordion sits outside the motion guard. It is navigation,
 not decoration, so it works with or without GSAP.
+
+## The résumé
+
+`resume/resume.html` is the source; `tools/build-resume.ps1` prints it to
+`Shin_Michael_Resume.pdf` on the Desktop with headless Chrome.
+
+It used to live on **artboard 8 of `PORTFOLIO.ai`** — an 88MB Illustrator file,
+which meant a one-word change needed Illustrator open and produced no diff.
+This version is text: it versions, it diffs, and a typo is a one-line fix.
+
+**It must stay on one Letter page.** The CSS holds it at exactly 11in with no
+slack, so anything added has to displace something. If it spills, cut a bullet
+rather than dropping the body below 9pt.
+
+Light ground on purpose — firms print these, and the site's near-black would be
+a toner brick. Everything else is the site's own language.
 
 ## The About page
 

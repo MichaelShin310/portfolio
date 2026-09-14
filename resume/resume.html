@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Michael Shin — Resume</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400..700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+/* ================================================================
+   MICHAEL SHIN — RESUME
+
+   Source of truth for the PDF. Printed with:
+     tools/build-resume.ps1
+
+   Light ground on purpose: firms print these, and the site's near-black
+   would be a toner brick. Everything else is the site's own language —
+   Space Grotesk, Inter Tight, JetBrains Mono, one orange accent.
+
+   Kept to a single Letter page. If it spills, cut a bullet rather than
+   shrinking the type below 9pt.
+   ================================================================ */
+
+@page { size: Letter; margin: 0; }
+
+:root {
+  --ink: #12110f;
+  --soft: #55524d;
+  --line: #d9d6d0;
+  --accent: #ff4d00;
+  --sans: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  --display: "Space Grotesk", "Inter Tight", sans-serif;
+  --mono: "JetBrains Mono", Consolas, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  color: var(--ink);
+  background: #fff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.sheet {
+  width: 8.5in;
+  min-height: 11in;
+  padding: 0.44in 0.6in 0.24in;
+  margin: 0 auto;
+}
+
+/* ---------------- Header ---------------- */
+
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.4in; }
+
+h1 {
+  font-family: var(--display);
+  font-size: 27pt;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+
+.role {
+  margin-top: 5pt;
+  font-size: 9.5pt;
+  color: var(--soft);
+  letter-spacing: -0.005em;
+}
+
+.contact {
+  font-family: var(--mono);
+  font-size: 7.4pt;
+  line-height: 1.75;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.contact a { color: var(--ink); text-decoration: none; }
+
+.rule { height: 2.5pt; background: var(--accent); margin: 7pt 0 0; }
+
+/* ---------------- Sections ---------------- */
+
+section { margin-top: 9pt; }
+
+h2 {
+  font-family: var(--mono);
+  font-size: 7.6pt;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding-bottom: 4pt;
+  border-bottom: 0.75pt solid var(--line);
+  margin-bottom: 6pt;
+}
+
+.entry { display: grid; grid-template-columns: 1.02in 1fr; gap: 0.16in; }
+.entry + .entry { margin-top: 6.5pt; }
+
+.when {
+  font-family: var(--mono);
+  font-size: 7.4pt;
+  letter-spacing: 0.04em;
+  color: var(--soft);
+  padding-top: 2.2pt;
+  white-space: nowrap;
+}
+
+h3 {
+  font-family: var(--display);
+  font-size: 11pt;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.org { font-weight: 400; color: var(--accent); }
+
+.sub { font-size: 8.6pt; color: var(--soft); margin-top: 1.2pt; line-height: 1.35; }
+
+ul { list-style: none; margin-top: 4pt; }
+
+li {
+  font-size: 9pt;
+  line-height: 1.34;
+  padding-left: 9pt;
+  position: relative;
+}
+
+li + li { margin-top: 2pt; }
+
+li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 5.2pt;
+  width: 3pt; height: 3pt;
+  background: var(--accent);
+}
+
+strong { font-weight: 600; }
+
+/* ---------------- Software ---------------- */
+
+.kit { display: grid; gap: 3.4pt; }
+
+.kit-row { display: grid; grid-template-columns: 1.02in 1fr; gap: 0.16in; align-items: baseline; }
+
+.kit-row dt {
+  font-family: var(--mono);
+  font-size: 7.4pt;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--soft);
+}
+
+.kit-row dd { font-size: 9pt; line-height: 1.38; }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header class="head">
+    <div>
+      <h1>Michael Shin</h1>
+      <p class="role">Architecture student · Chief Marketing Officer at UTern and APEX STUDENT</p>
+    </div>
+    <div class="contact">
+      Miami, Florida<br />
+      (412) 780-9061<br />
+      michaelshin310@gmail.com<br />
+      michaelshinstudio.com<br />
+      github.com/MichaelShin310
+    </div>
+  </header>
+  <div class="rule"></div>
+
+  <section>
+    <h2>Experience</h2>
+
+    <article class="entry">
+      <p class="when">2026 — Present</p>
+      <div>
+        <h3>Chief Marketing Officer <span class="org">· UTern</span></h3>
+        <p class="sub">AI internship agent for college students. Seven-person team across five states.</p>
+        <ul>
+          <li>Own brand voice, the content system and organic growth. <strong>700 students signed up as of September 2026</strong>, entirely organic — no paid acquisition.</li>
+          <li>Learned the production codebase rather than filing tickets and <strong>merged twelve pull requests</strong> into a Next.js / Supabase app: the blog and its editor, a newsletter with real double opt-in on Resend, RSS and per-post share cards.</li>
+          <li>Rebuilt the analytics after finding the pixel reported no conversions at all, including a signup path completing server-side that had been invisible for months. Six events now report, mirrored server-side.</li>
+          <li>Wrote the brand's single source of truth — voice, banned phrases, an approved statistics list — and built six agents that read it before drafting. Kept two widely-repeated industry myths off our own site.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="entry">
+      <p class="when">2025 — Present</p>
+      <div>
+        <h3>Chief Marketing Officer <span class="org">· APEX STUDENT</span></h3>
+        <p class="sub">AI scheduling app for students. Shipped — live on the App Store.</p>
+        <ul>
+          <li>Led design and development of the app's user interface end to end: today view, calendar, chat, weekly plan, onboarding and login.</li>
+          <li>Built the brand from a blank page — logo, palette, type, key visual — and LOLA, a character system with a personality spec, tone rules and a full expression set. Own creative direction, marketing strategy and the launch campaign.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="entry">
+      <p class="when">2024 — 2025</p>
+      <div>
+        <h3>Installer <span class="org">· Oeler's Industry, Inc.</span></h3>
+        <p class="sub">Installed acoustic systems in fiberglass and fabric on occupied residential and commercial sites.</p>
+      </div>
+    </article>
+  </section>
+
+  <section>
+    <h2>Education</h2>
+
+    <article class="entry">
+      <p class="when">2024 — Present</p>
+      <div>
+        <h3>B.Arch <span class="org">· University of Miami School of Architecture</span></h3>
+        <p class="sub">Minors in Art &amp; Art History and in Marketing. President's Honor Roll · CGPA 4.0</p>
+      </div>
+    </article>
+
+    <article class="entry">
+      <p class="when">2022</p>
+      <div>
+        <h3>Pre-College Architecture <span class="org">· Carnegie Mellon University</span></h3>
+        <p class="sub">Four-week intensive · High Pass</p>
+      </div>
+    </article>
+
+    <article class="entry">
+      <p class="when">2020 — 2024</p>
+      <div>
+        <h3>Diploma <span class="org">· Fox Chapel Area High School</span></h3>
+        <p class="sub">High Honors · Weighted GPA 4.29 · National Honor Society</p>
+      </div>
+    </article>
+  </section>
+
+  <section>
+    <h2>Software &amp; Fabrication</h2>
+    <dl class="kit">
+      <div class="kit-row">
+        <dt>Architecture</dt>
+        <dd>Rhino · Grasshopper · AutoCAD · SketchUp</dd>
+      </div>
+      <div class="kit-row">
+        <dt>Adobe</dt>
+        <dd>Illustrator · Photoshop · InDesign · Premiere Pro · After Effects · Lightroom Classic · Animate</dd>
+      </div>
+      <div class="kit-row">
+        <dt>Shop</dt>
+        <dd>Laser cutter · 3D printer · CNC router · Shop machinery</dd>
+      </div>
+      <div class="kit-row">
+        <dt>Development</dt>
+        <dd>Next.js · React · TypeScript · Supabase · Vercel · Git &amp; GitHub · Resend</dd>
+      </div>
+      <div class="kit-row">
+        <dt>Other</dt>
+        <dd>Blender · Remotion · Google Analytics · Semrush · Canon EOS R6 Mark II</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section>
+    <h2>Leadership &amp; Awards</h2>
+
+    <article class="entry">
+      <p class="when">2026</p>
+      <div>
+        <h3>Michele Edelson Photography Award <span class="org">· University of Miami</span></h3>
+        <p class="sub">Annual Juried Student Art Exhibition, for “Bouquet for the Rain”.</p>
+      </div>
+    </article>
+
+    <article class="entry">
+      <p class="when">2024 — 2025</p>
+      <div>
+        <h3>Chair and treasurer roles <span class="org">· University of Miami</span></h3>
+        <p class="sub">Rush Chair and Social Media &amp; Outreach Chair, Alpha Epsilon Pi · Treasurer, Korean Student Association · Marketing Committee, Asian American Student Association · Treasurer, Student Government (two years)</p>
+      </div>
+    </article>
+
+    <article class="entry">
+      <p class="when">2020 — 2024</p>
+      <div>
+        <h3>President <span class="org">· Best Buddies</span></h3>
+        <p class="sub">Helped raise <strong>$46,000</strong> at the annual Polar Plunge — the highest total in the tri-state area.</p>
+      </div>
+    </article>
+  </section>
+
+</div>
+</body>
+</html>
