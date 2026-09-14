@@ -1,0 +1,542 @@
+/* ================================================================
+   HOMEPAGE — "one continuous camera move"
+
+   The opener is a camera lens, so the whole page behaves like one:
+   sections are not revealed, the camera arrives at them. Five
+   primitives, nothing else — scrub, depth, counter-motion, velocity,
+   magnetic.
+
+   Everything here is legible with zero JavaScript. js/home.js adds
+   `.motion` to <html> only once GSAP is confirmed running and the
+   reader has not asked for reduced motion; the hidden start-states
+   below are scoped to that class, so a blocked CDN degrades to a
+   plain, complete page rather than a stack of empty sections.
+
+   Inner pages don't load this file — they keep css/style.css alone.
+   ================================================================ */
+
+body.home {
+  --grid: rgba(246, 245, 241, 0.17);
+  --rail-gap: clamp(1.25rem, 2.5vw, 2.25rem);
+}
+
+/* Lenis drives the scroll; without it this is a normal page. */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+body.home { overflow-x: clip; }
+
+/* ---------------- 1 · The lens ---------------- */
+
+.lens {
+  position: relative;
+  height: 200vh;
+  background: var(--paper);
+  /* Pull up under the sticky header so the film is full bleed from the
+     first frame and the header floats over it. */
+  margin-top: calc(-4rem - 1px);
+}
+
+.lens-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--paper);
+}
+
+.lens-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: opacity;
+}
+
+.lens-copy {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: clamp(2rem, 6vh, 4rem);
+  text-align: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.lens-copy h2 {
+  font-family: var(--display);
+  font-size: clamp(1.3rem, 2.6vw, 2rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.lens-hint {
+  display: inline-block;
+  margin-top: 1.1rem;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+/* ---------------- 2 · Name card ---------------- */
+
+.namecard {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  padding: clamp(4rem, 12vh, 9rem) var(--pad);
+  overflow: hidden;
+}
+
+/* One-point perspective — horizon, vanishing point, orthogonals. Drawn as
+   SVG rather than a rotated CSS plane: a constructed drawing is exact, and a
+   3D plane at this angle collapses its own grid into streaks. */
+.perspective {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.floor {
+  position: absolute;
+  left: -12%;
+  bottom: -8%;
+  width: 124%;
+  height: 88%;
+  fill: none;
+  stroke: var(--grid);
+  stroke-width: 1;
+  will-change: transform;
+}
+
+.floor line { vector-effect: non-scaling-stroke; }
+
+.name {
+  position: relative;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(3.5rem, 15vw, 13rem);
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+}
+
+.name-line { display: block; will-change: letter-spacing, transform; }
+
+.name-sub {
+  position: relative;
+  margin-top: clamp(1.5rem, 3vw, 2.5rem);
+  max-width: 40ch;
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  opacity: 0.7;
+}
+
+/* ---------------- 3 · Statement ---------------- */
+
+.statement {
+  padding: clamp(6rem, 18vh, 14rem) var(--pad);
+  max-width: var(--max);
+  margin: 0 auto;
+}
+
+.stmt {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(1.6rem, 4.2vw, 3.4rem);
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+  max-width: 22ch;
+}
+
+.stmt + .stmt { margin-top: clamp(0.75rem, 1.6vw, 1.4rem); }
+
+.stmt a {
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.06em;
+  transition: color 0.25s ease;
+}
+
+.stmt a:hover { color: var(--accent); }
+
+/* ---------------- 4 · The spine (architecture) ---------------- */
+
+.spine { position: relative; height: 240vh; }
+
+.spine-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.spine-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.22);
+  will-change: transform;
+}
+
+.spine-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(5,5,5,0.92) 0%, rgba(5,5,5,0.45) 42%, rgba(5,5,5,0.1) 70%),
+    linear-gradient(to right, rgba(5,5,5,0.7), transparent 55%);
+}
+
+.spine-copy {
+  position: absolute;
+  left: var(--pad);
+  bottom: clamp(5rem, 14vh, 9rem);
+  max-width: min(46ch, 70vw);
+  will-change: transform;
+}
+
+.spine-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(2rem, 5.5vw, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+.spine-body {
+  margin-top: 1.25rem;
+  max-width: 46ch;
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+  opacity: 0.85;
+}
+
+.spine-caption {
+  position: absolute;
+  left: var(--pad);
+  bottom: clamp(1.5rem, 4vh, 2.5rem);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+/* A link that is a line of type and an arrow, not a rectangle. */
+.link-arrow {
+  display: inline-block;
+  margin-top: 1.75rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line-strong);
+  transition: color 0.25s ease, border-color 0.25s ease;
+  will-change: transform;
+}
+
+.link-arrow::after { content: " \2192"; }
+
+.link-arrow:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ---------------- Second spine beat: the drawing ---------------- */
+
+.drawing {
+  padding: clamp(5rem, 14vh, 10rem) var(--pad) clamp(4rem, 10vh, 7rem);
+  max-width: var(--max);
+  margin: 0 auto;
+}
+
+.drawing-plate {
+  border: 1px solid var(--line);
+  background: var(--plate);
+  overflow: hidden;
+  will-change: transform;
+}
+
+.drawing-plate img { width: 100%; height: auto; display: block; }
+
+.drawing-note {
+  margin-top: 1.1rem;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+/* ---------------- 5 · The rail ---------------- */
+
+.rail { position: relative; padding-top: clamp(4rem, 10vh, 7rem); }
+
+.rail-intro {
+  max-width: var(--max);
+  margin: 0 auto clamp(2.5rem, 6vh, 4rem);
+  padding: 0 var(--pad);
+}
+
+.rail-intro h2 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 4.5vw, 3.4rem);
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+}
+
+.rail-intro p { margin-top: 1rem; max-width: 46ch; opacity: 0.72; }
+
+/* Base layout is a wrapping grid. The horizontal rail is an enhancement
+   layered on top for html.motion only — clipping five cards into a track
+   that nothing can translate would lose two projects entirely. */
+.rail-viewport { overflow: visible; }
+
+.rail-track {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: clamp(2rem, 4vw, 3rem) var(--rail-gap);
+  padding: 0 var(--pad) clamp(4rem, 10vh, 7rem);
+}
+
+.proj { display: block; }
+
+.proj-frame {
+  display: block;
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.proj-frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.04);
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+              filter 0.6s ease;
+  filter: saturate(0.92);
+}
+
+.proj:hover .proj-frame img { transform: scale(1.1); filter: saturate(1.05); }
+
+.proj-meta { display: block; margin-top: 1.1rem; }
+
+.proj-name {
+  display: block;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(1.2rem, 1.9vw, 1.65rem);
+  letter-spacing: -0.02em;
+  transition: color 0.25s ease;
+}
+
+.proj:hover .proj-name { color: var(--accent); }
+
+.proj-line {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  opacity: 0.68;
+  max-width: 34ch;
+}
+
+/* ---------------- 6 · Flagship ---------------- */
+
+.flagship {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: clamp(5rem, 14vh, 10rem) var(--pad);
+  border-top: 1px solid var(--line);
+}
+
+.flagship-mark { width: clamp(120px, 14vw, 190px); height: auto; opacity: 0.95; }
+
+.flagship-claim {
+  margin-top: clamp(1.75rem, 4vh, 3rem);
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(1.8rem, 4.6vw, 3.6rem);
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  max-width: 20ch;
+}
+
+.flagship-body {
+  margin-top: 1.5rem;
+  max-width: 52ch;
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+  opacity: 0.8;
+}
+
+/* ---------------- 7 · Tools ---------------- */
+
+.tools { padding: clamp(4rem, 12vh, 8rem) 0; border-top: 1px solid var(--line); }
+
+.tools-intro {
+  max-width: var(--max);
+  margin: 0 auto clamp(2.5rem, 6vh, 4rem);
+  padding: 0 var(--pad);
+}
+
+.tools-intro h2 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 4.5vw, 3.4rem);
+  letter-spacing: -0.035em;
+}
+
+.tool-rows { display: grid; gap: clamp(1rem, 2.5vw, 2rem); }
+
+.tool-row { overflow: hidden; }
+
+.tool-lane {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(2rem, 4vw, 3.75rem);
+  width: max-content;
+  padding: 0 1rem;
+  will-change: transform;
+}
+
+.tool {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  width: clamp(80px, 8vw, 110px);
+  opacity: 0.85;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.tool:hover { opacity: 1; transform: translateY(-4px); }
+
+.tool img {
+  width: clamp(44px, 4.2vw, 60px);
+  height: clamp(44px, 4.2vw, 60px);
+  object-fit: contain;
+}
+
+/* The app icons are opaque tiles; rounding them lets Rhino and SketchUp
+   sit with Adobe's rounded squares instead of reading as bare rectangles. */
+.tool img[src$=".png"] { border-radius: 22%; }
+
+.tool em {
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* ---------------- Footer ---------------- */
+
+body.home .site-foot { padding-top: clamp(5rem, 12vh, 8rem); }
+
+body.home .foot-head {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(2.2rem, 6vw, 5rem);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-top: 0;
+}
+
+/* ================================================================
+   Motion start-states — scoped to html.motion, which js/home.js sets
+   only when GSAP is live and reduced motion is off.
+   ================================================================ */
+
+html.motion .stmt,
+html.motion .rail-intro > *,
+html.motion .tools-intro h2,
+html.motion .flagship > *,
+html.motion .drawing-note {
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+html.motion .spine-copy,
+html.motion .spine-caption { opacity: 0; }
+
+html.motion .proj { opacity: 0; transform: translateY(40px); }
+
+@media (min-width: 901px) {
+  html.motion .rail {
+    height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    /* Anchored to the top, not centred: centring silently pushes the heading
+       up under the sticky header whenever the cards grow. Pinned at top:0, so
+       the padding is what clears the header. */
+    justify-content: flex-start;
+    padding-top: 5.5rem;
+  }
+  html.motion .rail-intro { margin-bottom: clamp(1.75rem, 4vh, 3rem); width: 100%; }
+  html.motion .rail-track {
+    display: flex;
+    gap: var(--rail-gap);
+    padding-bottom: 0;
+    will-change: transform;
+  }
+  html.motion .rail-viewport { overflow: hidden; }
+  /* As a flex item this was shrinking below the card height and clipping the
+     project names; the track must set its own height. */
+  html.motion .rail-viewport { flex: 0 0 auto; }
+  .rail-intro p { max-width: 64ch; }
+
+  /* Size the cards off viewport HEIGHT, not width. Width-based cards left
+     the track barely wider than the screen, so the lateral travel was a few
+     hundred pixels and the whole move read as a twitch. Height-based cards
+     always fit the pinned viewport and give the rail a real distance to
+     cover. */
+  html.motion .proj {
+    flex: 0 0 auto;
+    width: calc(var(--card-h) * 0.75);
+    will-change: transform;
+  }
+  html.motion .rail { --card-h: min(52vh, 480px); }
+}
+
+/* ---------------- Responsive ---------------- */
+
+@media (max-width: 900px) {
+  .spine { height: 200vh; }
+  .spine-copy { max-width: none; right: var(--pad); }
+
+  /* No sideways rail on a phone — the base grid collapses to one column. */
+  .rail-track { grid-template-columns: 1fr; gap: clamp(2.5rem, 7vw, 3.5rem); }
+  .proj-line { max-width: none; }
+  .tool-lane { gap: 2rem; }
+}
+
+@media (max-width: 560px) {
+  .namecard { min-height: 88vh; }
+  .name { font-size: clamp(3rem, 17vw, 5rem); }
+  .stmt { max-width: none; }
+  .spine-body { font-size: 1rem; }
+}
+
+/* ---------------- Reduced motion ---------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .lens { height: 100vh; }
+  .spine { height: auto; }
+  .spine-stage { position: relative; height: 78vh; }
+  .spine-img { transform: none; }
+  .proj-frame img { transition: none; }
+  .tool { transition: none; }
+}

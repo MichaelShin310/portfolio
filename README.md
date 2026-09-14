@@ -8,17 +8,17 @@ for labels. Hairline rules instead of decoration.
 ## Structure
 
 ```
-index.html          Homepage — opener, hero, credential row, work, capabilities,
-                    stack, closer, contact footer
+index.html          Homepage — the motion rebuild (see below)
 utern.html          Flagship case study — UTern (brand + shipped product work)
 architecture.html   Studio work index (fish market flagship + projects + coursework)
 apex-student.html   Case study — APEX STUDENT (LOLA)
 stamped.html        Concept study — Stamped
 photography.html    Visual archive + 2026 Michele Edelson Photography Award
 about.html          About page
-css/style.css       All styling (design tokens at the top in :root)
-js/main.js          Scroll reveal, the scroll-scrubbed opener, the architecture
-                    accordion
+css/style.css       Shared styling + design tokens (:root). Inner pages only.
+css/home.css        Homepage layout and motion start-states
+js/main.js          Inner pages: scroll reveal, architecture accordion
+js/home.js          Homepage: the five motion primitives
 favicon.svg         Monogram
 img/og/             1200x630 share cards (generated, see below)
 tools/              make-og-cards.py
@@ -31,6 +31,54 @@ Architecture, APEX STUDENT, Stamped, Photography. The next-project chain
 follows the same loop: UTern → Architecture → APEX → Stamped → Photography →
 UTern.
 
+## The homepage motion system
+
+The opener is a camera lens, so the whole page behaves like one: sections are
+not revealed, the camera arrives at them. **Five primitives, nothing else** —
+add a sixth and it stops being a language:
+
+| | |
+|---|---|
+| **scrub** | driven by scroll *position*, not triggered by crossing a line |
+| **depth** | images sit further back than their captions and move slower |
+| **counter-motion** | image drifts one way, its text the other |
+| **velocity** | the tool lanes lead with scroll speed, then settle |
+| **magnetic** | links pull toward the cursor and ease back |
+
+Built on **Lenis 1.3.26** (smooth scroll, jsDelivr) and **GSAP 3.15.0 +
+ScrollTrigger** (cdnjs). Both pinned. No build step.
+
+**Motion is additive and must stay that way.** `js/home.js` adds `.motion` to
+`<html>` only after confirming GSAP loaded *and* reduced motion is off. Every
+hidden start-state in `css/home.css` is scoped to that class, and the
+horizontal rail layout is scoped to `html.motion` too — an early version
+clipped five cards into a track nothing could translate, which silently lost
+two projects when the CDN was blocked. If you add a section, add its
+start-state under `html.motion` and check it with the scripts removed.
+
+The rail is pinned on desktop only, cards sized off viewport *height* so they
+always fit the pinned frame, and anchored to the top rather than centred
+(centring pushes the heading under the sticky header as cards grow). Below
+901px it is an ordinary grid.
+
+`window.__lenis` is exposed deliberately: Lenis owns the scroll position, so
+`window.scrollTo()` gets reverted on the next frame and automated checks need
+a way in.
+
+## The tools wall
+
+Icons are the real marks. The Adobe apps, Rhino, AutoCAD and SketchUp are
+extracted from the installs on this machine by `tools/extract-app-icons.ps1` —
+Simple Icons carries no Adobe marks (dropped over trademark policy) and no
+Rhino, so a public set would have forced exactly the design tools into plain
+type. Re-run the script after upgrading an app; the paths carry version
+numbers.
+
+The dev marks (Next.js, React, TypeScript, Supabase, Vercel, GitHub, Resend,
+Google Analytics, Semrush) are Simple Icons SVGs vendored into `img/tools/`.
+Four of them ship pure black and were lightened to `#F6F5F1` so they are
+visible on the dark wall.
+
 ## Editorial rules (don't break these)
 
 - **Every number on this site has to survive a question about where it came
@@ -42,7 +90,10 @@ UTern.
 - No new fonts. Space Grotesk for display, Inter Tight for body, JetBrains Mono
   for labels only.
 - Curation over volume. Five items in Work, maximum.
-- Motion is one move (fade-up reveal), repeated. Nothing bounces.
+- Tools are **tools**. Techniques ("double opt-in", "audience
+  de-duplication") are not tools and do not belong on the wall.
+- Motion is one language, not a pile of effects. Five primitives, listed
+  above. Nothing bounces.
 - Decoration has to carry information. The old drafting-sheet garnish (corner
   ticks, hatch fills, sheet codes like `A-01`, the fixed titleblock) is gone
   deliberately — don't reintroduce it.
