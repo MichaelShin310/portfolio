@@ -29,8 +29,21 @@ body.home { overflow-x: clip; }
 
 .lens {
   position: relative;
+  /* Sits above the name card, which is pulled up underneath it, so the lens
+     dissolves away to reveal a crystal that is already pinned and full
+     frame. Sliding one section off another left a visible edge: the clip's
+     black is #000 and the page is #050505. */
+  z-index: 2;
   height: 200vh;
-  background: var(--paper);
+  /* These are scroll tracks, not content sections, so the global
+     `section { padding: … 0 }` has to go: with border-box it both shortens
+     the distance the stage can pin over and leaves a band of empty black
+     between one shot and the next. */
+  padding: 0;
+  /* Deliberately transparent. The stage inside carries the background and is
+     what fades; leaving an opaque one here would keep painting over the name
+     card underneath no matter how far the stage faded. */
+  background: transparent;
   /* Pull up under the sticky header so the film is full bleed from the
      first frame and the header floats over it. */
   margin-top: calc(-4rem - 1px);
@@ -86,7 +99,14 @@ body.home { overflow-x: clip; }
 /* A scroll track, not a screen: the stage pins while the beam sweeps. The
    track only earns its height when there is something to scrub — without
    motion it collapses to a single screen rather than 280vh of dead scroll. */
-.namecard { position: relative; height: auto; }
+.namecard {
+  position: relative;
+  z-index: 1;
+  height: auto;
+  padding: 0;
+  /* Overlaps the lens's last screen so the handoff is a dissolve, not a wipe. */
+  margin-top: -100vh;
+}
 
 html.motion .namecard { height: 280vh; }
 
@@ -531,6 +551,8 @@ html.motion .wcard { opacity: 0; transform: translateY(40px); }
 
 @media (prefers-reduced-motion: reduce) {
   .lens { height: 100vh; }
+  /* Nothing dissolves, so nothing should overlap. */
+  .namecard { margin-top: 0; }
   .spine { height: auto; }
   .spine-stage { position: relative; height: 78vh; }
   .spine-img { transform: none; }

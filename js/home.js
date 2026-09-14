@@ -35,7 +35,8 @@
 
     var media = lens.querySelector(".lens-media");
     var copy = lens.querySelector(".lens-copy");
-    if (!media) return;
+    var sticky = lens.querySelector(".lens-sticky");
+    if (!media || !sticky) return;
 
     var duration = 0;
     var last = -1;
@@ -59,10 +60,11 @@
         if (Math.abs(t - last) > 0.02) { media.currentTime = t; last = t; }
       }
 
-      // The film already ends inside the black of the lens, so the handoff
-      // into the page is a pure fade between two identical blacks.
+      // Fade the whole stage, not just the film: the stage carries an opaque
+      // background, and the name card is sitting directly underneath waiting
+      // to be revealed.
       var exit = Math.min(1, Math.max(0, (p - SCRUB_END) / (1 - SCRUB_END)));
-      media.style.opacity = String(1 - exit);
+      sticky.style.opacity = String(1 - exit);
       if (copy) copy.style.opacity = String(Math.max(0, 1 - p * 4));
     }
 
@@ -247,6 +249,11 @@
     bed.addEventListener("loadedmetadata", function () {
       ready = true;
       card.classList.add("has-bed");
+      // Start dark. --rev defaults to "show everything" so the page is
+      // readable with no JS, but once the beam is confirmed to be coming we
+      // hand the type over to it — otherwise it sits there lit during the
+      // dissolve and then pops out when the sweep takes over.
+      reveal.style.setProperty("--rev", "0%");
     });
 
     bed.src = bed.getAttribute("data-src");
@@ -261,6 +268,8 @@
       ease: "none",
       scrollTrigger: {
         trigger: ".namecard",
+        // The card is already pinned and full frame when the lens dissolves
+        // off it, so the sweep can start the instant it becomes visible.
         start: "top top",
         end: "bottom bottom",
         scrub: 0.5

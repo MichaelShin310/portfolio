@@ -85,10 +85,24 @@ front runs roughly parallel to the beam (195°) and descends with it, driven by
 `--rev`. The type is fully revealed by 82% of the track, so the last of the
 scroll is spent reading it rather than waiting for it.
 
-Degradation is the usual rule, with one extra: `--rev` defaults to `200%`,
-which shows everything. So with no JS the name is simply there, and
-`html.motion` is what buys the 280vh track — without it the section collapses
-to one screen rather than leaving 280vh of dead scroll.
+**The lens hands over by dissolve, not by wipe.** `.namecard` is pulled up
+`-100vh` so it sits underneath the lens's last screen, already pinned and full
+frame; the lens stage then fades out over it. Two things this depends on, both
+easy to undo by accident:
+
+- `.lens` must stay `background: transparent`. The *stage* inside it carries
+  the background and is what fades — an opaque background on the section keeps
+  painting over the card below no matter how far the stage fades.
+- Neither section may carry the global `section { padding: … 0 }`. With
+  border-box it shortens the distance the stage can pin over *and* leaves a
+  band of empty black between one shot and the next.
+
+Degradation is the usual rule, with two extras: `--rev` defaults to `200%`,
+which shows everything, so with no JS the name is simply there; and
+`html.motion` is what buys the 280vh track, so without it the section
+collapses to one screen rather than leaving 280vh of dead scroll. Under real
+reduced motion the overlap is removed too (`margin-top: 0`), since nothing
+dissolves and nothing should overlap.
 
 With film present the card takes `.has-bed` and the drawn icosahedron hides
 entirely: the crystal is already a lit faceted solid and two of them is the
