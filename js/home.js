@@ -128,20 +128,13 @@
      slower than the page — depth, not decoration. */
   gsap.utils.toArray(".name-line").forEach(function (line, i) {
     gsap.fromTo(line,
-      { letterSpacing: "-0.075em", opacity: 0, y: 40 },
+      { letterSpacing: "-0.075em" },
       {
-        letterSpacing: "-0.045em", opacity: 1, y: 0,
-        duration: 1.4, ease: "expo.out", delay: 0.12 * i,
+        letterSpacing: "-0.045em",
+        duration: 1.6, ease: "expo.out", delay: 0.12 * i,
         scrollTrigger: { trigger: ".namecard", start: "top 70%" }
       });
   });
-
-  gsap.fromTo(".name",
-    { yPercent: 0 },
-    {
-      yPercent: -14, ease: "none",
-      scrollTrigger: { trigger: ".namecard", start: "top top", end: "bottom top", scrub: true }
-    });
 
   /* The ground plane travels. Transversals sit at 1/d, so advancing every
      d by one geometric step and wrapping the phase moves the floor toward
@@ -234,37 +227,60 @@
     });
   })();
 
-  /* Optional film bed. The site works without it; if the file is not there
-     the element is removed and the constructed grid carries the section on
-     its own. Scroll velocity nudges the playback rate — the same velocity
-     primitive the lanes use. */
+  /* Optional film bed — scrubbed, not looped.
+     The beam starts near vertical and swings down through the clip, so
+     scroll position drives playback directly and a mask front descends with
+     it, lighting the name out of the dark rather than fading it in.
+     The site works without the file: if it is missing the element is removed,
+     the icosahedron stays, and --rev keeps its default of "show everything". */
   (function filmBed() {
     var bed = document.querySelector(".name-bed");
     var card = document.querySelector(".namecard");
-    if (!bed || !card) return;
+    var reveal = document.querySelector(".name-reveal");
+    if (!bed || !card || !reveal) return;
 
     // The source is attached here rather than in the markup so the error
     // handler is guaranteed to be listening before the request goes out.
     bed.addEventListener("error", function () { bed.remove(); });
 
-    bed.addEventListener("loadeddata", function () {
+    var ready = false;
+    bed.addEventListener("loadedmetadata", function () {
+      ready = true;
       card.classList.add("has-bed");
-      var play = bed.play();
-      if (play && play.catch) { play.catch(function () {}); }
     });
 
     bed.src = bed.getAttribute("data-src");
 
-    var settle;
-    ScrollTrigger.create({
-      trigger: ".namecard",
-      start: "top bottom",
-      end: "bottom top",
-      onUpdate: function (self) {
-        if (!card.classList.contains("has-bed")) return;
-        bed.playbackRate = 1 + Math.min(Math.abs(self.getVelocity()) / 2600, 1.4);
-        clearTimeout(settle);
-        settle = setTimeout(function () { bed.playbackRate = 1; }, 220);
+    // A scrubbed proxy rather than a raw scroll read, so the sweep keeps
+    // easing after the wheel stops instead of snapping to a halt.
+    var proxy = { p: 0 };
+    var lastFrame = -1;
+
+    gsap.to(proxy, {
+      p: 1,
+      ease: "none",
+      scrollTrigger: {
+        trigger: ".namecard",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 0.5
+      },
+      onUpdate: function () {
+        var p = proxy.p;
+
+        if (ready && bed.duration) {
+          var t = p * (bed.duration - 0.04);
+          // Seeking every frame is wasted work; a frame's worth is enough.
+          if (Math.abs(t - lastFrame) > 1 / 48) {
+            bed.currentTime = t;
+            lastFrame = t;
+          }
+        }
+
+        // The type is fully lit before the section releases, so the last of
+        // the scroll is spent reading it rather than waiting for it.
+        var rev = gsap.utils.clamp(0, 1, p / 0.82);
+        reveal.style.setProperty("--rev", (rev * 150) + "%");
       }
     });
   })();
@@ -272,7 +288,7 @@
   /* Cursor spotlight over the name card. */
   if (fine) {
     (function spotlight() {
-      var card = document.querySelector(".namecard");
+      var card = document.querySelector(".name-stage");
       if (!card) return;
       card.addEventListener("pointermove", function (e) {
         var r = card.getBoundingClientRect();

@@ -73,24 +73,41 @@ its real vertex set and rotated live, and a cursor spotlight.
 `window.scrollTo()` gets reverted on the next frame and automated checks need
 a way in.
 
-## The optional film bed
+## The name card: light reveals the type
 
-`.namecard` can carry a video behind the constructed grid. Drop a file at
-`img/hero/name-bed.mp4` and it appears — no other edit needed. If the file is
-absent, `js/home.js` removes the element and the page is byte-for-byte what it
-was, so the repo never depends on footage it does not have. The `src` is
-attached from JS rather than the markup so the error handler is listening
-before the request goes out.
+`img/hero/name-bed.mp4` is a faceted crystal with a beam that starts near
+vertical and swings down to the lower left over 8 seconds. It is **scrubbed,
+not looped** — `.namecard` is a 280vh track and the stage pins inside it, so
+scroll position drives `currentTime` directly.
 
-When a bed is present the card gets `.has-bed` and the drawn grid and the
-icosahedron dial back (0.55 / 0.4) so the name stays the loudest thing in the
-frame. Scroll velocity nudges playback rate, the same primitive the lanes use.
+The name is not faded in, it is **lit**. `.name-reveal` carries a mask whose
+front runs roughly parallel to the beam (195°) and descends with it, driven by
+`--rev`. The type is fully revealed by 82% of the track, so the last of the
+scroll is spent reading it rather than waiting for it.
 
-**Brief for any footage that goes in there:** 1920×1080 or larger, H.264 MP4,
-24fps, seamless loop, 8–15s, under ~6MB. It has to be *dark* — the name is
-bone white at 13rem over the top, and anything above roughly 20% average
-luminance kills it. No text, no people, no competing colour: the site has
-exactly one accent.
+Degradation is the usual rule, with one extra: `--rev` defaults to `200%`,
+which shows everything. So with no JS the name is simply there, and
+`html.motion` is what buys the 280vh track — without it the section collapses
+to one screen rather than leaving 280vh of dead scroll.
+
+With film present the card takes `.has-bed` and the drawn icosahedron hides
+entirely: the crystal is already a lit faceted solid and two of them is the
+same idea twice. Delete the video and the icosahedron comes straight back.
+
+**Encoding matters here.** Scrubbing seeks constantly, so the file is encoded
+**all-intra** (`-g 1`) — every frame a keyframe, which makes seeking instant.
+At 1280×720 that is only 3.8MB, smaller than the 4.8MB opener:
+
+```
+ffmpeg -i source.mp4 -an -c:v libx264 -preset slow -crf 21 -g 1        -pix_fmt yuv420p -movflags +faststart img/hero/name-bed.mp4
+```
+
+A normal GOP encode is half the size but scrubs badly — don't be tempted.
+
+**Brief for replacement footage:** dark (the name is bone white at 13rem over
+it), no text, no people, no competing colour, and a single clear directional
+move the mask can follow. On phones the 16:9 source is cropped hard and the
+crystal falls outside the frame — the beam alone carries it, which is fine.
 
 ## The About page
 

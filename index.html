@@ -84,71 +84,75 @@
     <!-- 2 — NAME CARD. One-point perspective, the first thing you draw in
          studio, used as the floor the name stands on. -->
     <section class="namecard">
-      <div class="perspective" aria-hidden="true">
-        <!-- Drop a file at img/hero/name-bed.mp4 and it appears here; no other
-             edit needed. Absent, js/home.js removes this element. -->
-        <video class="name-bed" data-src="img/hero/name-bed.mp4" muted loop playsinline preload="auto"></video>
-        <svg class="floor" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-          <defs>
-            <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#fff" stop-opacity="0"/>
-              <stop offset="0.38" stop-color="#fff" stop-opacity="0.55"/>
-              <stop offset="0.86" stop-color="#fff" stop-opacity="1"/>
-              <stop offset="1" stop-color="#fff" stop-opacity="0"/>
-            </linearGradient>
-            <mask id="floor-fade"><rect width="1600" height="900" fill="url(#fade)"/></mask>
-          </defs>
-          <g mask="url(#floor-fade)">
-            <line x1="-1600" y1="900" x2="800" y2="316"/>
-            <line x1="-1400" y1="900" x2="800" y2="316"/>
-            <line x1="-1200" y1="900" x2="800" y2="316"/>
-            <line x1="-1000" y1="900" x2="800" y2="316"/>
-            <line x1="-800" y1="900" x2="800" y2="316"/>
-            <line x1="-600" y1="900" x2="800" y2="316"/>
-            <line x1="-400" y1="900" x2="800" y2="316"/>
-            <line x1="-200" y1="900" x2="800" y2="316"/>
-            <line x1="0" y1="900" x2="800" y2="316"/>
-            <line x1="200" y1="900" x2="800" y2="316"/>
-            <line x1="400" y1="900" x2="800" y2="316"/>
-            <line x1="600" y1="900" x2="800" y2="316"/>
-            <line x1="800" y1="900" x2="800" y2="316"/>
-            <line x1="1000" y1="900" x2="800" y2="316"/>
-            <line x1="1200" y1="900" x2="800" y2="316"/>
-            <line x1="1400" y1="900" x2="800" y2="316"/>
-            <line x1="1600" y1="900" x2="800" y2="316"/>
-            <line x1="1800" y1="900" x2="800" y2="316"/>
-            <line x1="2000" y1="900" x2="800" y2="316"/>
-            <line x1="2200" y1="900" x2="800" y2="316"/>
-            <line x1="2400" y1="900" x2="800" y2="316"/>
-            <line x1="2600" y1="900" x2="800" y2="316"/>
-            <line x1="2800" y1="900" x2="800" y2="316"/>
-            <line x1="3000" y1="900" x2="800" y2="316"/>
-            <line x1="3200" y1="900" x2="800" y2="316"/>
-            <line x1="0" y1="900.0" x2="1600" y2="900.0"/>
-            <line x1="0" y1="727.3" x2="1600" y2="727.3"/>
-            <line x1="0" y1="605.6" x2="1600" y2="605.6"/>
-            <line x1="0" y1="520.0" x2="1600" y2="520.0"/>
-            <line x1="0" y1="459.6" x2="1600" y2="459.6"/>
-            <line x1="0" y1="417.2" x2="1600" y2="417.2"/>
-            <line x1="0" y1="387.2" x2="1600" y2="387.2"/>
-            <line x1="0" y1="366.2" x2="1600" y2="366.2"/>
-            <line x1="0" y1="351.3" x2="1600" y2="351.3"/>
-            <line x1="0" y1="340.9" x2="1600" y2="340.9"/>
-            <line x1="0" y1="333.5" x2="1600" y2="333.5"/>
-            <line x1="0" y1="328.3" x2="1600" y2="328.3"/>
-            <line x1="0" y1="324.7" x2="1600" y2="324.7"/>
-            <line x1="0" y1="322.1" x2="1600" y2="322.1"/>
-          </g>
-        </svg>
-        <svg class="solid" viewBox="-2 -2 4 4" aria-hidden="true">
-          <g class="solid-edges"></g>
-        </svg>
+      <div class="name-stage">
+        <div class="perspective" aria-hidden="true">
+          <!-- Drop a file at img/hero/name-bed.mp4 and it appears here; no other
+               edit needed. Absent, js/home.js removes this element. -->
+          <video class="name-bed" data-src="img/hero/name-bed.mp4" muted loop playsinline preload="auto"></video>
+          <svg class="floor" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+            <defs>
+              <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+                <stop offset="0.38" stop-color="#fff" stop-opacity="0.55"/>
+                <stop offset="0.86" stop-color="#fff" stop-opacity="1"/>
+                <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+              </linearGradient>
+              <mask id="floor-fade"><rect width="1600" height="900" fill="url(#fade)"/></mask>
+            </defs>
+            <g mask="url(#floor-fade)">
+              <line x1="-1600" y1="900" x2="800" y2="316"/>
+              <line x1="-1400" y1="900" x2="800" y2="316"/>
+              <line x1="-1200" y1="900" x2="800" y2="316"/>
+              <line x1="-1000" y1="900" x2="800" y2="316"/>
+              <line x1="-800" y1="900" x2="800" y2="316"/>
+              <line x1="-600" y1="900" x2="800" y2="316"/>
+              <line x1="-400" y1="900" x2="800" y2="316"/>
+              <line x1="-200" y1="900" x2="800" y2="316"/>
+              <line x1="0" y1="900" x2="800" y2="316"/>
+              <line x1="200" y1="900" x2="800" y2="316"/>
+              <line x1="400" y1="900" x2="800" y2="316"/>
+              <line x1="600" y1="900" x2="800" y2="316"/>
+              <line x1="800" y1="900" x2="800" y2="316"/>
+              <line x1="1000" y1="900" x2="800" y2="316"/>
+              <line x1="1200" y1="900" x2="800" y2="316"/>
+              <line x1="1400" y1="900" x2="800" y2="316"/>
+              <line x1="1600" y1="900" x2="800" y2="316"/>
+              <line x1="1800" y1="900" x2="800" y2="316"/>
+              <line x1="2000" y1="900" x2="800" y2="316"/>
+              <line x1="2200" y1="900" x2="800" y2="316"/>
+              <line x1="2400" y1="900" x2="800" y2="316"/>
+              <line x1="2600" y1="900" x2="800" y2="316"/>
+              <line x1="2800" y1="900" x2="800" y2="316"/>
+              <line x1="3000" y1="900" x2="800" y2="316"/>
+              <line x1="3200" y1="900" x2="800" y2="316"/>
+              <line x1="0" y1="900.0" x2="1600" y2="900.0"/>
+              <line x1="0" y1="727.3" x2="1600" y2="727.3"/>
+              <line x1="0" y1="605.6" x2="1600" y2="605.6"/>
+              <line x1="0" y1="520.0" x2="1600" y2="520.0"/>
+              <line x1="0" y1="459.6" x2="1600" y2="459.6"/>
+              <line x1="0" y1="417.2" x2="1600" y2="417.2"/>
+              <line x1="0" y1="387.2" x2="1600" y2="387.2"/>
+              <line x1="0" y1="366.2" x2="1600" y2="366.2"/>
+              <line x1="0" y1="351.3" x2="1600" y2="351.3"/>
+              <line x1="0" y1="340.9" x2="1600" y2="340.9"/>
+              <line x1="0" y1="333.5" x2="1600" y2="333.5"/>
+              <line x1="0" y1="328.3" x2="1600" y2="328.3"/>
+              <line x1="0" y1="324.7" x2="1600" y2="324.7"/>
+              <line x1="0" y1="322.1" x2="1600" y2="322.1"/>
+            </g>
+          </svg>
+          <svg class="solid" viewBox="-2 -2 4 4" aria-hidden="true">
+            <g class="solid-edges"></g>
+          </svg>
+        </div>
+        <div class="name-reveal">
+          <h1 class="name">
+            <span class="name-line">Michael</span>
+            <span class="name-line">Shin</span>
+          </h1>
+          <p class="name-sub">Architecture, University of Miami — and brand, growth and product at UTern.</p>
+        </div>
       </div>
-      <h1 class="name">
-        <span class="name-line" data-track>Michael</span>
-        <span class="name-line" data-track>Shin</span>
-      </h1>
-      <p class="name-sub">Architecture, University of Miami — and brand, growth and product at UTern.</p>
     </section>
 
 

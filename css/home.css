@@ -83,14 +83,35 @@ body.home { overflow-x: clip; }
 
 /* ---------------- 2 · Name card ---------------- */
 
-.namecard {
-  position: relative;
-  min-height: 100vh;
+/* A scroll track, not a screen: the stage pins while the beam sweeps. The
+   track only earns its height when there is something to scrub — without
+   motion it collapses to a single screen rather than 280vh of dead scroll. */
+.namecard { position: relative; height: auto; }
+
+html.motion .namecard { height: 280vh; }
+
+html:not(.motion) .name-stage { position: relative; }
+
+.name-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
   display: grid;
   align-content: center;
   justify-items: start;
   padding: clamp(4rem, 12vh, 9rem) var(--pad);
-  overflow: hidden;
+}
+
+/* The light reveals the type instead of the type fading in. The mask front
+   runs roughly parallel to the beam and descends with it; --rev is driven
+   from js/home.js. Its default shows everything, so with no motion the name
+   is simply there. */
+.name-reveal {
+  position: relative;
+  --rev: 200%;
+  -webkit-mask-image: linear-gradient(195deg, #000 calc(var(--rev) - 26%), transparent var(--rev));
+          mask-image: linear-gradient(195deg, #000 calc(var(--rev) - 26%), transparent var(--rev));
 }
 
 /* Optional film bed behind the constructed grid. js/home.js removes the
@@ -105,12 +126,13 @@ body.home { overflow-x: clip; }
   transition: opacity 1.2s ease;
 }
 
-.namecard.has-bed .name-bed { opacity: 0.55; }
+.namecard.has-bed .name-bed { opacity: 1; }
 
-/* With film behind them the drawing and the solid step back so the name
-   stays the loudest thing in the frame. */
-.namecard.has-bed .floor { opacity: 0.55; }
-.namecard.has-bed .solid { opacity: 0.4; }
+/* The crystal is itself a lit faceted solid, so the drawn icosahedron would
+   just be the same idea twice. It steps aside when there is film; remove the
+   file and it comes straight back. */
+.namecard.has-bed .floor { opacity: 0.3; }
+.namecard.has-bed .solid { opacity: 0; }
 
 /* One-point perspective — horizon, vanishing point, orthogonals. Drawn as
    SVG rather than a rotated CSS plane: a constructed drawing is exact, and a
@@ -182,7 +204,7 @@ body.home { overflow-x: clip; }
 .solid circle { fill: var(--accent); }
 
 /* Cursor spotlight — the grid and the solid brighten where you point. */
-.namecard::after {
+.name-stage::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -197,7 +219,7 @@ body.home { overflow-x: clip; }
   transition: opacity 0.5s ease;
 }
 
-html.motion .namecard:hover::after { opacity: 1; }
+html.motion .name-stage:hover::after { opacity: 1; }
 
 /* ---------------- 4 · The spine (architecture) ---------------- */
 
@@ -500,7 +522,7 @@ html.motion .wcard { opacity: 0; transform: translateY(40px); }
 }
 
 @media (max-width: 560px) {
-  .namecard { min-height: 88vh; }
+  html.motion .namecard { height: 240vh; }
   .name { font-size: clamp(3rem, 17vw, 5rem); }
   .spine-body { font-size: 1rem; }
 }
