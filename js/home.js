@@ -122,7 +122,6 @@
 
   arrive(".flagship > *", { trigger: ".flagship", stagger: 0.07 });
   arrive(".tools-intro h2");
-  arrive(".drawing-note");
 
   /* ---------------- Name card ----------------
      Tracking opens as the camera settles, then the whole line drifts up
@@ -235,6 +234,41 @@
     });
   })();
 
+  /* Optional film bed. The site works without it; if the file is not there
+     the element is removed and the constructed grid carries the section on
+     its own. Scroll velocity nudges the playback rate — the same velocity
+     primitive the lanes use. */
+  (function filmBed() {
+    var bed = document.querySelector(".name-bed");
+    var card = document.querySelector(".namecard");
+    if (!bed || !card) return;
+
+    // The source is attached here rather than in the markup so the error
+    // handler is guaranteed to be listening before the request goes out.
+    bed.addEventListener("error", function () { bed.remove(); });
+
+    bed.addEventListener("loadeddata", function () {
+      card.classList.add("has-bed");
+      var play = bed.play();
+      if (play && play.catch) { play.catch(function () {}); }
+    });
+
+    bed.src = bed.getAttribute("data-src");
+
+    var settle;
+    ScrollTrigger.create({
+      trigger: ".namecard",
+      start: "top bottom",
+      end: "bottom top",
+      onUpdate: function (self) {
+        if (!card.classList.contains("has-bed")) return;
+        bed.playbackRate = 1 + Math.min(Math.abs(self.getVelocity()) / 2600, 1.4);
+        clearTimeout(settle);
+        settle = setTimeout(function () { bed.playbackRate = 1; }, 220);
+      }
+    });
+  })();
+
   /* Cursor spotlight over the name card. */
   if (fine) {
     (function spotlight() {
@@ -275,15 +309,6 @@
     {
       opacity: 0.5, duration: 1, ease: "power2.out",
       scrollTrigger: { trigger: ".spine", start: "top top-=25%" }
-    });
-
-  /* ---------------- The drawing plate ----------------
-     Depth: the plate rises slightly slower than the page around it. */
-  gsap.fromTo(".drawing-plate",
-    { y: 70, scale: 0.97 },
-    {
-      y: -40, scale: 1, ease: "none",
-      scrollTrigger: { trigger: ".drawing", start: "top bottom", end: "bottom top", scrub: 0.7 }
     });
 
   /* ---------------- The work lane ----------------

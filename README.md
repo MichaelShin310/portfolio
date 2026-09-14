@@ -73,6 +73,25 @@ its real vertex set and rotated live, and a cursor spotlight.
 `window.scrollTo()` gets reverted on the next frame and automated checks need
 a way in.
 
+## The optional film bed
+
+`.namecard` can carry a video behind the constructed grid. Drop a file at
+`img/hero/name-bed.mp4` and it appears — no other edit needed. If the file is
+absent, `js/home.js` removes the element and the page is byte-for-byte what it
+was, so the repo never depends on footage it does not have. The `src` is
+attached from JS rather than the markup so the error handler is listening
+before the request goes out.
+
+When a bed is present the card gets `.has-bed` and the drawn grid and the
+icosahedron dial back (0.55 / 0.4) so the name stays the loudest thing in the
+frame. Scroll velocity nudges playback rate, the same primitive the lanes use.
+
+**Brief for any footage that goes in there:** 1920×1080 or larger, H.264 MP4,
+24fps, seamless loop, 8–15s, under ~6MB. It has to be *dark* — the name is
+bone white at 13rem over the top, and anything above roughly 20% average
+luminance kills it. No text, no people, no competing colour: the site has
+exactly one accent.
+
 ## The About page
 
 It is Michael's actual résumé, transcribed from `RESUME.pdf` and

@@ -85,6 +85,9 @@
          studio, used as the floor the name stands on. -->
     <section class="namecard">
       <div class="perspective" aria-hidden="true">
+        <!-- Drop a file at img/hero/name-bed.mp4 and it appears here; no other
+             edit needed. Absent, js/home.js removes this element. -->
+        <video class="name-bed" data-src="img/hero/name-bed.mp4" muted loop playsinline preload="auto"></video>
         <svg class="floor" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
           <defs>
             <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
@@ -168,13 +171,6 @@
       </div>
     </section>
 
-    <!-- Second spine beat: the drawing under the render. -->
-    <section class="drawing">
-      <figure class="drawing-plate">
-        <img src="img/architecture/fish-market-elevation.png" alt="Miami River Fish Market, long elevation drawing" />
-      </figure>
-      <p class="drawing-note">The same building, said a different way.</p>
-    </section>
 
     <!-- 4 — THE WORK. A lane that never stops moving; hovering a card
          pulls it forward and holds the lane still. -->

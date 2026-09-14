@@ -93,6 +93,25 @@ body.home { overflow-x: clip; }
   overflow: hidden;
 }
 
+/* Optional film bed behind the constructed grid. js/home.js removes the
+   element if the file is missing, so the page is identical without it. */
+.name-bed {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.namecard.has-bed .name-bed { opacity: 0.55; }
+
+/* With film behind them the drawing and the solid step back so the name
+   stays the loudest thing in the frame. */
+.namecard.has-bed .floor { opacity: 0.55; }
+.namecard.has-bed .solid { opacity: 0.4; }
+
 /* One-point perspective — horizon, vanishing point, orthogonals. Drawn as
    SVG rather than a rotated CSS plane: a constructed drawing is exact, and a
    3D plane at this angle collapses its own grid into streaks. */
@@ -260,32 +279,6 @@ html.motion .namecard:hover::after { opacity: 1; }
 .link-arrow::after { content: " \2192"; }
 
 .link-arrow:hover { color: var(--accent); border-color: var(--accent); }
-
-/* ---------------- Second spine beat: the drawing ---------------- */
-
-.drawing {
-  padding: clamp(5rem, 14vh, 10rem) var(--pad) clamp(4rem, 10vh, 7rem);
-  max-width: var(--max);
-  margin: 0 auto;
-}
-
-.drawing-plate {
-  border: 1px solid var(--line);
-  background: var(--plate);
-  overflow: hidden;
-  will-change: transform;
-}
-
-.drawing-plate img { width: 100%; height: auto; display: block; }
-
-.drawing-note {
-  margin-top: 1.1rem;
-  font-family: var(--mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  opacity: 0.5;
-}
 
 /* ---------------- 4 · The work lane ----------------
    Infinite moving cards. The lane never stops; hovering a card pulls it
