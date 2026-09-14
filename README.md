@@ -17,6 +17,7 @@ photography.html    Visual archive + 2026 Michele Edelson Photography Award
 about.html          About page
 css/style.css       Shared styling + design tokens (:root). Inner pages only.
 css/home.css        Homepage layout and motion start-states
+css/resume.css      About page — the CV layout
 js/main.js          Inner pages: scroll reveal, architecture accordion
 js/home.js          Homepage: the five motion primitives
 favicon.svg         Monogram
@@ -56,14 +57,33 @@ clipped five cards into a track nothing could translate, which silently lost
 two projects when the CDN was blocked. If you add a section, add its
 start-state under `html.motion` and check it with the scripts removed.
 
-The rail is pinned on desktop only, cards sized off viewport *height* so they
-always fit the pinned frame, and anchored to the top rather than centred
-(centring pushes the heading under the sticky header as cards grow). Below
-901px it is an ordinary grid.
+**The work lane** is infinite moving cards: it drifts forever, hovering a card
+lifts it in 3D toward you, dims its neighbours and holds the lane still so it
+can be read. The dim runs through GSAP rather than a CSS class, because the
+arrive tween leaves an inline `opacity` on every card that no class can
+outrank.
+
+**The name card** carries the page's only ambient motion: a one-point
+perspective floor that travels toward the viewer (transversals sit at 1/d, so
+advancing every d by one geometric step and wrapping the phase loops with no
+seam), a wireframe icosahedron — the Fly's Eye Dome from studio — built from
+its real vertex set and rotated live, and a cursor spotlight.
 
 `window.__lenis` is exposed deliberately: Lenis owns the scroll position, so
 `window.scrollTo()` gets reverted on the next frame and automated checks need
 a way in.
+
+## The About page
+
+It is Michael's actual résumé, transcribed from `RESUME.pdf` and
+`Shin,Michael_Resume.pdf` and merged (the newer file has the photography
+award, the older one has APEX Student — both are true). Four sections:
+Experience, Education, Leadership, Tools, each reverse-chronological.
+
+Typos in the source PDFs are silently corrected here — "Dimploma",
+"Tresurer", "instillation", "Architectur". The phone number on the PDF is
+deliberately **not** on the page: a public portfolio is a spam magnet and the
+email is already the contact route.
 
 ## The tools wall
 
@@ -73,6 +93,10 @@ Simple Icons carries no Adobe marks (dropped over trademark policy) and no
 Rhino, so a public set would have forced exactly the design tools into plain
 type. Re-run the script after upgrading an app; the paths carry version
 numbers.
+
+Adobe Animate is in the wall too, and Grasshopper deliberately is not: it
+ships as a `.gha` plug-in with no extractable icon and lives inside Rhino,
+so it stays a text credit on the About page.
 
 The dev marks (Next.js, React, TypeScript, Supabase, Vercel, GitHub, Resend,
 Google Analytics, Semrush) are Simple Icons SVGs vendored into `img/tools/`.

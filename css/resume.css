@@ -1,0 +1,182 @@
+/* ================================================================
+   ABOUT / CV
+
+   A résumé laid out as a document rather than a card grid: section
+   name pinned left, entries running down the right, dates in their
+   own column so the chronology is readable at a glance.
+   Loads on top of css/style.css.
+   ================================================================ */
+
+.cv-hero {
+  padding-top: clamp(4rem, 12vh, 8rem);
+  padding-bottom: clamp(2.5rem, 6vh, 4rem);
+}
+
+.cv-hero h1 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(2.1rem, 5.5vw, 4.25rem);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  max-width: 18ch;
+}
+
+.cv-lede {
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+  max-width: 62ch;
+}
+
+.cv-lede p { font-size: clamp(1rem, 1.3vw, 1.15rem); opacity: 0.82; }
+
+.cv-actions {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cv-actions a {
+  border-bottom: 1px solid var(--line-strong);
+  padding-bottom: 3px;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.cv-actions a:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ---------------- Sections ---------------- */
+
+.cv-sec { padding: clamp(2.5rem, 6vh, 4rem) 0; }
+
+.cv-grid {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: clamp(1.5rem, 3vw, 2.75rem);
+  border-top: 1px solid var(--line-strong);
+  padding-top: clamp(1.5rem, 3vh, 2.5rem);
+}
+
+.cv-head {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  position: sticky;
+  top: 6rem;
+  align-self: start;
+}
+
+/* ---------------- Entries ---------------- */
+
+.cv-entry {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr;
+  gap: clamp(1rem, 2.5vw, 2rem);
+  padding: clamp(1.5rem, 3vh, 2.25rem) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.cv-entry:last-child { border-bottom: none; padding-bottom: 0; }
+
+.cv-when {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  padding-top: 0.35rem;
+  white-space: nowrap;
+}
+
+.cv-what h3 {
+  font-family: var(--display);
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* The employer sits with the title but reads as a second voice. */
+.cv-org {
+  display: block;
+  margin-top: 0.3rem;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--accent);
+}
+
+.cv-role {
+  margin-top: 0.55rem;
+  font-size: 0.95rem;
+  opacity: 0.62;
+}
+
+.cv-what ul {
+  margin-top: 0.9rem;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.5rem;
+  max-width: 62ch;
+}
+
+.cv-what li {
+  font-size: 0.98rem;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+.cv-what li::marker { color: var(--accent); }
+
+.cv-what strong { font-weight: 600; }
+
+.cv-link {
+  margin-top: 1rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cv-link a {
+  border-bottom: 1px solid var(--line-strong);
+  padding-bottom: 2px;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.cv-link a:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ---------------- Tools ---------------- */
+
+.cv-tools { display: grid; gap: 1.4rem; padding-top: 0.5rem; }
+
+.cv-tools > div {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr;
+  gap: clamp(1rem, 2.5vw, 2rem);
+  align-items: baseline;
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.cv-tools > div:last-child { border-bottom: none; padding-bottom: 0; }
+
+.cv-tools .label { opacity: 0.55; }
+
+.cv-tools p { font-size: 0.98rem; line-height: 1.6; opacity: 0.85; max-width: 62ch; }
+
+/* ---------------- Responsive ---------------- */
+
+@media (max-width: 900px) {
+  .cv-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+  .cv-head { position: static; }
+  .cv-entry { grid-template-columns: 1fr; gap: 0.6rem; }
+  .cv-when { padding-top: 0; }
+  .cv-tools > div { grid-template-columns: 1fr; gap: 0.5rem; }
+}

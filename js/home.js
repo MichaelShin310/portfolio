@@ -6,13 +6,14 @@
      scrub          driven by scroll position, not triggered by it
      depth          images sit further back and move slower
      counter-motion image drifts one way, its text the other
-     velocity       rails lead with scroll speed, then settle
+     velocity       lanes lead with scroll speed, then settle
      magnetic       links pull toward the cursor and ease back
 
    Everything below is ADDITIVE. The page is complete and readable
    with this file absent, the CDN blocked, or reduced motion asked
    for; in those cases we never add `.motion` to <html>, so the
-   hidden start-states in css/home.css never apply.
+   hidden start-states and the drifting-lane layout in css/home.css
+   never apply.
    ================================================================ */
 
 (function () {
@@ -20,6 +21,7 @@
 
   var root = document.documentElement;
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   var hasGsap = typeof window.gsap !== "undefined" &&
                 typeof window.ScrollTrigger !== "undefined";
 
@@ -95,8 +97,6 @@
     gsap.ticker.lagSmoothing(0);
   }
 
-  var isDesktop = window.matchMedia("(min-width: 901px)").matches;
-
   /* ---------------- Primitive: arrive ----------------
      The default. Content rises into place on its own scrub as the
      camera reaches it. One move, repeated — nothing bounces. */
@@ -120,8 +120,6 @@
     });
   }
 
-  arrive(".stmt", { stagger: 0.09 });
-  arrive(".rail-intro > *", { trigger: ".rail-intro", stagger: 0.08 });
   arrive(".flagship > *", { trigger: ".flagship", stagger: 0.07 });
   arrive(".tools-intro h2");
   arrive(".drawing-note");
@@ -146,13 +144,109 @@
       scrollTrigger: { trigger: ".namecard", start: "top top", end: "bottom top", scrub: true }
     });
 
-  // The perspective floor recedes faster than the name sitting on it.
-  gsap.fromTo(".floor",
-    { yPercent: 0 },
-    {
-      yPercent: -26, ease: "none",
-      scrollTrigger: { trigger: ".namecard", start: "top bottom", end: "bottom top", scrub: true }
+  /* The ground plane travels. Transversals sit at 1/d, so advancing every
+     d by one geometric step and wrapping the phase moves the floor toward
+     the viewer forever with no visible seam. */
+  (function travellingFloor() {
+    var floor = document.querySelector(".floor");
+    if (!floor) return;
+
+    var lines = Array.prototype.slice.call(floor.querySelectorAll("line"))
+      .filter(function (l) { return l.getAttribute("x1") === "0"; });
+    if (!lines.length) return;
+
+    var VY = 316, BASE = 900, K = BASE - VY, STEP = 1.42;
+    var phase = 0;
+
+    gsap.ticker.add(function (time, delta) {
+      phase = (phase + delta / 9000) % 1;
+      for (var i = 0; i < lines.length; i++) {
+        var y = VY + K / Math.pow(STEP, i + phase);
+        lines[i].setAttribute("y1", y);
+        lines[i].setAttribute("y2", y);
+      }
     });
+  })();
+
+  /* The solid is the icosahedron from studio (Fuller's Fly's Eye Dome),
+     built from its real vertex set and rotated live rather than exported
+     as a picture. */
+  (function rotatingSolid() {
+    var svg = document.querySelector(".solid");
+    var group = svg && svg.querySelector(".solid-edges");
+    if (!group) return;
+
+    var phi = (1 + Math.sqrt(5)) / 2;
+    var raw = [
+      [-1, phi, 0], [1, phi, 0], [-1, -phi, 0], [1, -phi, 0],
+      [0, -1, phi], [0, 1, phi], [0, -1, -phi], [0, 1, -phi],
+      [phi, 0, -1], [phi, 0, 1], [-phi, 0, -1], [-phi, 0, 1]
+    ];
+    var norm = Math.sqrt(1 + phi * phi);
+    var verts = raw.map(function (v) {
+      return [v[0] / norm, v[1] / norm, v[2] / norm];
+    });
+
+    // Every vertex pair separated by the icosahedron's edge length is an edge.
+    var edges = [];
+    var edgeLen = 2 / norm;
+    for (var i = 0; i < verts.length; i++) {
+      for (var j = i + 1; j < verts.length; j++) {
+        var dx = verts[i][0] - verts[j][0];
+        var dy = verts[i][1] - verts[j][1];
+        var dz = verts[i][2] - verts[j][2];
+        if (Math.abs(Math.sqrt(dx * dx + dy * dy + dz * dz) - edgeLen) < 0.001) {
+          edges.push([i, j]);
+        }
+      }
+    }
+
+    var ns = "http://www.w3.org/2000/svg";
+    var nodes = edges.map(function () {
+      var line = document.createElementNS(ns, "line");
+      group.appendChild(line);
+      return line;
+    });
+
+    var ax = 0.4, ay = 0;
+    gsap.ticker.add(function (time, delta) {
+      ax += delta / 26000;
+      ay += delta / 14000;
+
+      var ca = Math.cos(ax), sa = Math.sin(ax);
+      var cb = Math.cos(ay), sb = Math.sin(ay);
+
+      var proj = verts.map(function (v) {
+        var y1 = v[1] * ca - v[2] * sa;
+        var z1 = v[1] * sa + v[2] * ca;
+        var x2 = v[0] * cb + z1 * sb;
+        var z2 = -v[0] * sb + z1 * cb;
+        var k = 2.6 / (2.6 + z2);            // gentle perspective
+        return [x2 * k * 1.35, y1 * k * 1.35];
+      });
+
+      for (var n = 0; n < nodes.length; n++) {
+        var a = proj[edges[n][0]], b = proj[edges[n][1]];
+        nodes[n].setAttribute("x1", a[0]);
+        nodes[n].setAttribute("y1", a[1]);
+        nodes[n].setAttribute("x2", b[0]);
+        nodes[n].setAttribute("y2", b[1]);
+      }
+    });
+  })();
+
+  /* Cursor spotlight over the name card. */
+  if (fine) {
+    (function spotlight() {
+      var card = document.querySelector(".namecard");
+      if (!card) return;
+      card.addEventListener("pointermove", function (e) {
+        var r = card.getBoundingClientRect();
+        card.style.setProperty("--mx", (e.clientX - r.left) + "px");
+        card.style.setProperty("--my", (e.clientY - r.top) + "px");
+      });
+    })();
+  }
 
   /* ---------------- The spine ----------------
      The camera pushes into the render while the copy holds, then
@@ -192,43 +286,75 @@
       scrollTrigger: { trigger: ".drawing", start: "top bottom", end: "bottom top", scrub: 0.7 }
     });
 
-  /* ---------------- The rail ----------------
-     Vertical scroll becomes lateral travel. Pinned only on desktop; a
-     phone gets the plain vertical stack the CSS already describes. */
-  if (isDesktop) {
-    var track = document.querySelector(".rail-track");
-    var viewport = document.querySelector(".rail-viewport");
+  /* ---------------- The work lane ----------------
+     Infinite moving cards. Hovering lifts the card in 3D toward you, dims
+     its neighbours and holds the lane still so it can be read. Scroll
+     velocity leads the drift — the same primitive as the tools wall. */
+  (function workLane() {
+    var lane = document.querySelector(".work-lane");
+    if (!lane) return;
 
-    if (track && viewport) {
-      var distance = function () {
-        return Math.max(0, track.scrollWidth - window.innerWidth);
-      };
+    // Duplicate the set, then travel exactly half the lane. The loop point
+    // is pixel-identical to the start, so the wrap is invisible.
+    lane.innerHTML += lane.innerHTML;
 
-      gsap.to(track, {
-        x: function () { return -distance(); },
-        ease: "none",
-        scrollTrigger: {
-          trigger: ".rail",
-          start: "top top",
-          end: function () { return "+=" + distance(); },
-          pin: true,
-          scrub: 0.7,
-          anticipatePin: 1,
-          invalidateOnRefresh: true
-        }
+    gsap.to(lane.children, {
+      opacity: 1, y: 0, duration: 1, ease: "expo.out", stagger: 0.06,
+      scrollTrigger: { trigger: ".work", start: "top 80%" }
+    });
+
+    var drift = gsap.fromTo(lane,
+      { xPercent: 0 },
+      { xPercent: -50, duration: 46, ease: "none", repeat: -1 });
+
+    var settle;
+    ScrollTrigger.create({
+      trigger: ".work",
+      start: "top bottom",
+      end: "bottom top",
+      onUpdate: function (self) {
+        if (lane.classList.contains("is-held")) return;
+        var boost = 1 + Math.min(Math.abs(self.getVelocity()) / 300, 7);
+        gsap.to(drift, { timeScale: boost, duration: 0.3, overwrite: true });
+        clearTimeout(settle);
+        settle = setTimeout(function () {
+          gsap.to(drift, { timeScale: 1, duration: 1.2, overwrite: true });
+        }, 180);
+      }
+    });
+
+    if (!fine) return;
+
+    var cards = Array.prototype.slice.call(lane.children);
+    cards.forEach(function (card) {
+      var rx = gsap.quickTo(card, "rotationX", { duration: 0.5, ease: "power3" });
+      var ry = gsap.quickTo(card, "rotationY", { duration: 0.5, ease: "power3" });
+
+      card.addEventListener("pointerenter", function () {
+        lane.classList.add("is-held");
+        gsap.to(drift, { timeScale: 0, duration: 0.6, overwrite: true });
+        gsap.to(card, { scale: 1.06, z: 45, duration: 0.6, ease: "expo.out", overwrite: "auto" });
+        // Dimming has to run through GSAP: the arrive tween leaves an inline
+        // opacity on every card, and a CSS class can't outrank that.
+        gsap.to(cards.filter(function (c) { return c !== card; }),
+                { opacity: 0.3, duration: 0.45, ease: "power2.out", overwrite: "auto" });
       });
 
-      // Once pinned, a card's vertical position never changes, so it can't
-      // trigger on its own edge. The whole set arrives together, staggered,
-      // as the rail locks.
-      gsap.to(".proj", {
-        opacity: 1, y: 0, duration: 1, ease: "expo.out", stagger: 0.07,
-        scrollTrigger: { trigger: ".rail", start: "top 60%" }
+      card.addEventListener("pointermove", function (e) {
+        var r = card.getBoundingClientRect();
+        ry(((e.clientX - (r.left + r.width / 2)) / r.width) * 11);
+        rx(((e.clientY - (r.top + r.height / 2)) / r.height) * -9);
       });
-    }
-  } else {
-    arrive(".proj", { stagger: 0.05 });
-  }
+
+      card.addEventListener("pointerleave", function () {
+        lane.classList.remove("is-held");
+        rx(0); ry(0);
+        gsap.to(card, { scale: 1, z: 0, duration: 0.6, ease: "expo.out", overwrite: "auto" });
+        gsap.to(cards, { opacity: 1, duration: 0.45, ease: "power2.out", overwrite: "auto" });
+        gsap.to(drift, { timeScale: 1, duration: 1, overwrite: true });
+      });
+    });
+  })();
 
   /* ---------------- Tools: velocity ----------------
      Two lanes drifting in opposite directions. Scroll speed leads them
@@ -237,9 +363,6 @@
     var lane = row.querySelector(".tool-lane");
     if (!lane) return;
 
-    // Duplicate the contents, then travel exactly half the lane. The loop
-    // point is pixel-identical to the start, so the wrap is invisible and
-    // we never have to measure widths that images can change on load.
     lane.innerHTML += lane.innerHTML;
 
     var dir = parseFloat(row.getAttribute("data-dir")) || 1;
@@ -270,7 +393,7 @@
      Links stop being rectangles you aim at and become things that
      reach back. Pointer only — never on touch, where there is no
      cursor to attract and the transform would just feel broken. */
-  if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+  if (fine) {
     gsap.utils.toArray("[data-magnetic]").forEach(function (el) {
       var pull = 0.32;
       var radius = 90;

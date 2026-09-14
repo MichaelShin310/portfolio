@@ -95,6 +95,7 @@ $apps = [ordered]@{
   'premiere'    = 'C:\Program Files\Adobe\Adobe Premiere Pro 2026\Adobe Premiere Pro.exe'
   'aftereffects'= 'C:\Program Files\Adobe\Adobe After Effects 2026\Support Files\AfterFX.exe'
   'lightroom'   = 'C:\Program Files\Adobe\Adobe Lightroom Classic\Lightroom.exe'
+  'animate'     = 'C:\Program Files\Adobe\Adobe Animate 2024\Animate.exe'
 }
 
 foreach ($name in $apps.Keys) {
