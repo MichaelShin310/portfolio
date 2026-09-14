@@ -229,6 +229,29 @@
     });
   })();
 
+  /* Where the light actually is, measured rather than guessed.
+     Every frame of the clip was sampled across the x band the name occupies,
+     recording the lowest row the beam still lights (threshold 100/255). The
+     result is how far down the light has reached, per frame, as a thousandth
+     of video height; -1 means the beam has not entered that band yet, which
+     is the first two seconds. Monotonic by construction: light that has
+     reached a point does not un-reach it.
+
+     Regenerate with tools/trace-beam.py if the clip is ever replaced. */
+  var BEAM_Y = [
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+    -1,-1,34,60,82,103,126,144,156,172,191,207,218,230,244,257,267,277,
+    289,300,307,314,324,334,342,351,358,365,373,381,388,392,397,404,412,
+    419,425,430,436,441,447,453,458,462,465,469,475,479,482,486,492,496,
+    499,503,507,510,514,520,524,527,529,532,536,541,543,547,552,554,557,
+    560,564,568,570,573,578,581,582,587,591,594,596,599,602,605,608,610,
+    615,619,622,624,627,630,633,637,641,644,647,649,654,658,661,665,670,
+    676,682,690,701,709,716,726,737,747,756,765,777,788,797,807,820,832,
+    842,853,869,883,894,908,925,940,954,971,989,999,1000,1000,1000,1000,
+    1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000
+  ];
+
   /* Optional film bed — scrubbed, not looped.
      The beam starts near vertical and swings down through the clip, so
      scroll position drives playback directly and a mask front descends with
@@ -239,7 +262,40 @@
     var bed = document.querySelector(".name-bed");
     var card = document.querySelector(".namecard");
     var reveal = document.querySelector(".name-reveal");
-    if (!bed || !card || !reveal) return;
+    var stage = document.querySelector(".name-stage");
+    if (!bed || !card || !reveal || !stage) return;
+
+    var VIDEO_W = 1280, VIDEO_H = 720;
+
+    // A ghost copy sits behind, unmasked, carrying the glass treatment: the
+    // letters read as unlit glass in the dark and the beam lights them. Cloned
+    // at runtime and hidden from assistive tech so the real heading stays the
+    // only one in the accessibility tree.
+    var ghost = reveal.cloneNode(true);
+    ghost.classList.add("name-ghost");
+    ghost.classList.remove("name-reveal");
+    ghost.setAttribute("aria-hidden", "true");
+    ghost.removeAttribute("style");
+
+    // Strip the heading semantics from the copy. aria-hidden keeps it out of
+    // the accessibility tree, but a second <h1> would still sit in the
+    // document outline for anything crawling the page.
+    var clonedHeading = ghost.querySelector("h1");
+    if (clonedHeading) {
+      var plain = document.createElement("div");
+      plain.className = clonedHeading.className;
+      plain.innerHTML = clonedHeading.innerHTML;
+      clonedHeading.parentNode.replaceChild(plain, clonedHeading);
+    }
+
+    // Both copies go in a shared relatively-positioned block so the ghost can
+    // sit exactly over the real text. Pinning it to the stage instead lands it
+    // in the stage's padding box, not where the type actually is.
+    var block = document.createElement("div");
+    block.className = "name-block";
+    reveal.parentNode.insertBefore(block, reveal);
+    block.appendChild(ghost);
+    block.appendChild(reveal);
 
     // The source is attached here rather than in the markup so the error
     // handler is guaranteed to be listening before the request goes out.
@@ -275,10 +331,14 @@
         scrub: 0.5
       },
       onUpdate: function () {
-        var p = proxy.p;
+        // Eased out: the sweep crosses the type at a readable pace and then
+        // the crystal keeps turning slowly, so the shot is still moving right
+        // up to the moment the section lets go. Nothing ever visibly stops.
+        var p = 1 - Math.pow(1 - proxy.p, 1.5);
+        var t = 0;
 
         if (ready && bed.duration) {
-          var t = p * (bed.duration - 0.04);
+          t = p * (bed.duration - 0.04);
           // Seeking every frame is wasted work; a frame's worth is enough.
           if (Math.abs(t - lastFrame) > 1 / 48) {
             bed.currentTime = t;
@@ -286,10 +346,29 @@
           }
         }
 
-        // The type is fully lit before the section releases, so the last of
-        // the scroll is spent reading it rather than waiting for it.
-        var rev = gsap.utils.clamp(0, 1, p / 0.82);
-        reveal.style.setProperty("--rev", (rev * 150) + "%");
+        // Drive the mask from where the beam actually is, not from scroll
+        // position, so the type lights as the light arrives at it rather than
+        // running ahead of or behind the beam.
+        if (ready && bed.duration) {
+          var f = Math.round((t / bed.duration) * (BEAM_Y.length - 1));
+          var lit = BEAM_Y[gsap.utils.clamp(0, BEAM_Y.length - 1, f)] / 1000;
+
+          if (lit < 0) {
+            reveal.style.setProperty("--rev", "0%");
+          } else {
+            // The clip is object-fit: cover, so map video space to the page
+            // before comparing it with where the type sits.
+            var vw = stage.clientWidth, vh = stage.clientHeight;
+            var scale = Math.max(vw / VIDEO_W, vh / VIDEO_H);
+            var drawnH = VIDEO_H * scale;
+            var beamPageY = (vh - drawnH) / 2 + lit * drawnH;
+
+            var box = reveal.getBoundingClientRect();
+            var stageBox = stage.getBoundingClientRect();
+            var frac = (beamPageY - (box.top - stageBox.top)) / box.height;
+            reveal.style.setProperty("--rev", (gsap.utils.clamp(-0.3, 1.6, frac) * 100) + "%");
+          }
+        }
       }
     });
   })();

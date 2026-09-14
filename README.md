@@ -80,10 +80,26 @@ vertical and swings down to the lower left over 8 seconds. It is **scrubbed,
 not looped** — `.namecard` is a 280vh track and the stage pins inside it, so
 scroll position drives `currentTime` directly.
 
-The name is not faded in, it is **lit**. `.name-reveal` carries a mask whose
-front runs roughly parallel to the beam (195°) and descends with it, driven by
-`--rev`. The type is fully revealed by 82% of the track, so the last of the
-scroll is spent reading it rather than waiting for it.
+The name is not faded in, it is **lit — by where the beam actually is**, not
+by scroll position. `tools/trace-beam.py` samples every frame across the x band
+the name occupies and records the lowest row the beam still lights; the result
+is baked into `BEAM_Y` in `js/home.js` as how far down the light has reached
+per frame. At runtime that gets mapped out of video space through the
+`object-fit: cover` transform and compared against where the type actually
+sits, so the mask front rides the beam at any viewport size. **Re-run the
+tracer and repaste `BEAM_Y` if the clip is ever replaced** — otherwise the
+reveal will drift away from the light.
+
+The type is **glass**: a ghost copy, cloned at runtime and stripped of its
+heading semantics, sits behind carrying an edge-only stroke, and the real copy
+on top is a clipped gradient fill that only shows where the beam has passed.
+So the letters read as unlit glass in the dark and light up as the beam
+crosses them.
+
+Timing is eased out, so the sweep crosses the type at a readable pace and the
+crystal then keeps turning slowly right up to the moment the section lets go.
+Nothing ever visibly stops, and there is no point where the shot is frozen
+while you are still pinned.
 
 **The lens hands over by dissolve, not by wipe.** `.namecard` is pulled up
 `-100vh` so it sits underneath the lens's last screen, already pinned and full
