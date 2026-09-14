@@ -18,7 +18,8 @@ about.html          About page
 css/style.css       Shared styling + design tokens (:root). Inner pages only.
 css/home.css        Homepage layout and motion start-states
 css/resume.css      About page — the CV layout
-js/main.js          Inner pages: scroll reveal, architecture accordion
+js/main.js          Inner pages: smooth scroll, arrive, depth, magnetic,
+                    architecture accordion
 js/home.js          Homepage: the five motion primitives
 favicon.svg         Monogram
 img/og/             1200x630 share cards (generated, see below)
@@ -148,6 +149,31 @@ A normal GOP encode is half the size but scrubs badly — don't be tempted.
 it), no text, no people, no competing colour, and a single clear directional
 move the mask can follow. On phones the 16:9 source is cropped hard and the
 crystal falls outside the frame — the beam alone carries it, which is fine.
+
+## The inner pages
+
+They share the homepage's **grammar**, not its choreography: the same Lenis
+settings (so moving between them does not feel like two different sites), the
+same single arrive move with the same easing, the same magnetic links, and the
+same idea that images sit further back than the words about them.
+
+Magnetic is applied **by selector** in `js/main.js` rather than by
+`data-magnetic` in the markup, so the six inner pages gained it without being
+edited.
+
+Depth on images is deliberately slight — `scale: 1.05`, ±2%. Most of those
+frames are product screenshots that are already cover-cropped, and the scale
+needed to hide a larger drift eats the UI they exist to show. `.contain`
+frames (logos, full drawings) are excluded outright: they are sized to fit and
+must not be cropped at all.
+
+`.reveal`'s hidden start-state is scoped to `html.motion`, which `js/main.js`
+sets only once GSAP is confirmed. **This matters more here than on the
+homepage** — it used to be ungated, which meant a blocked CDN or a failed
+script left every one of these pages completely blank.
+
+The architecture accordion sits outside the motion guard. It is navigation,
+not decoration, so it works with or without GSAP.
 
 ## The About page
 

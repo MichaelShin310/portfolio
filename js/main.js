@@ -1,137 +1,158 @@
-// Scroll-reveal: one signature move, repeated. Nothing bounces.
-// Implemented as a synchronous sweep (not IntersectionObserver) so content
-// is never gated. Observers and rAF don't fire in hidden/embedded pages.
+/* ================================================================
+   INNER PAGES — the same motion language as the homepage
+
+   The homepage is one continuous camera move; these pages are the
+   documents you arrive at. They share the grammar rather than the
+   choreography: the same smooth scroll, the same single arrive move,
+   the same magnetic links, the same idea that images sit further back
+   than the words about them.
+
+   ADDITIVE, exactly as on the homepage. `.motion` goes on <html> only
+   once GSAP is confirmed and reduced motion has not been asked for,
+   and every hidden start-state in the stylesheet is scoped to it. With
+   this file absent or the CDN blocked, these pages are plain, complete
+   documents.
+
+   The architecture accordion lives outside that guard — it is
+   navigation, not decoration, so it must work regardless.
+   ================================================================ */
+
 (function () {
-  var els = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
+  "use strict";
 
-  function sweep() {
-    els = els.filter(function (el) {
-      if (el.getBoundingClientRect().top < window.innerHeight * 0.96) {
-        // Hidden/embedded pages pause CSS transitions, so show final state.
-        if (document.hidden) { el.style.transition = "none"; }
-        el.classList.add("in");
-        return false;
-      }
-      return true;
-    });
-    return els.length;
-  }
+  var root = document.documentElement;
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  var hasGsap = typeof window.gsap !== "undefined" &&
+                typeof window.ScrollTrigger !== "undefined";
 
-  // Above-the-fold content shows immediately, before first paint.
-  sweep();
+  /* ---------------- Architecture accordion ----------------
+     One project open at a time. Runs with or without GSAP. */
+  (function accordion() {
+    var items = Array.prototype.slice.call(document.querySelectorAll(".arch-item"));
+    if (!items.length) return;
 
-  window.addEventListener("scroll", sweep, { passive: true });
-  window.addEventListener("resize", sweep);
-  document.addEventListener("visibilitychange", sweep);
-})();
-
-// Cinematic scroll opener: scroll position scrubs the orbit video while the
-// frame stays pinned, then the visual shrinks and fades into the page.
-// The first 78% of the track drives the orbit; the last 22% is the exit.
-(function () {
-  var cine = document.getElementById("cine");
-  if (!cine) return;
-
-  var media = cine.querySelector(".cine-media");
-  var copy = cine.querySelector(".cine-copy");
-
-  // Reduced motion: no scrub, no pin theatrics — just show the poster once.
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    return;
-  }
-
-  var duration = 0;
-  media.addEventListener("loadedmetadata", function () {
-    duration = media.duration || 0;
-  });
-  // Some browsers fire loadedmetadata before this script attaches.
-  if (media.readyState >= 1) { duration = media.duration || 0; }
-
-  var SCRUB_END = 0.9;    // portion of the track that plays the film
-  var lastTime = -1;
-  var ticking = false;
-
-  function update() {
-    ticking = false;
-    var rect = cine.getBoundingClientRect();
-    var total = rect.height - window.innerHeight;
-    if (total <= 0) return;
-    var p = Math.min(1, Math.max(0, -rect.top / total));
-
-    // Scrub the film through the first part of the scroll.
-    if (duration > 0) {
-      var t = Math.min(p / SCRUB_END, 1) * duration * 0.999;
-      if (Math.abs(t - lastTime) > 0.02) {
-        media.currentTime = t;
-        lastTime = t;
-      }
+    function setOpen(item, open) {
+      item.classList.toggle("open", open);
+      var btn = item.querySelector(".arch-toggle");
+      if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
     }
 
-    // Exit: the film already ends inside the black of the lens, so the
-    // handoff is a pure fade into the identical page black. No movement.
-    var exit = Math.min(1, Math.max(0, (p - SCRUB_END) / (1 - SCRUB_END)));
-    media.style.opacity = String(1 - exit);
+    items.forEach(function (item) {
+      var btn = item.querySelector(".arch-toggle");
+      if (!btn) return;
 
-    // The caption fades out as soon as scrolling starts.
-    copy.style.opacity = String(Math.max(0, 1 - p * 4));
-  }
+      btn.addEventListener("click", function () {
+        var wasOpen = item.classList.contains("open");
+        items.forEach(function (other) { setOpen(other, false); });
+        if (wasOpen) return;
 
-  function onScroll() {
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(update);
-    }
-  }
-
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", onScroll);
-  media.addEventListener("loadedmetadata", onScroll);
-  update();
-})();
-
-// Architecture accordion: one project open at a time. Opening a project
-// closes whichever is currently open.
-(function () {
-  var items = Array.prototype.slice.call(document.querySelectorAll(".arch-item"));
-  if (!items.length) return;
-
-  function setOpen(item, open) {
-    item.classList.toggle("open", open);
-    var btn = item.querySelector(".arch-toggle");
-    if (btn) { btn.setAttribute("aria-expanded", open ? "true" : "false"); }
-  }
-
-  items.forEach(function (item) {
-    var btn = item.querySelector(".arch-toggle");
-    if (!btn) return;
-    btn.addEventListener("click", function () {
-      var wasOpen = item.classList.contains("open");
-      items.forEach(function (other) { setOpen(other, false); });
-      if (!wasOpen) {
         setOpen(item, true);
-        // Land at the top of the newly opened project, just below the sticky
-        // header — not wherever the previous scroll position happened to be.
+
+        // Land at the top of the newly opened project, just below the
+        // sticky header — not wherever the previous scroll happened to be.
         var head = document.querySelector(".site-head");
         var offset = (head ? head.getBoundingClientRect().height : 0) + 24;
         var y = item.getBoundingClientRect().top + window.pageYOffset - offset;
-        window.scrollTo({ top: y, behavior: "smooth" });
-      }
+
+        if (window.__lenis) window.__lenis.scrollTo(y);
+        else window.scrollTo({ top: y, behavior: reduced ? "auto" : "smooth" });
+
+        if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
+      });
+    });
+  })();
+
+  if (!hasGsap || reduced) return;
+
+  root.classList.add("motion");
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ---------------- Smooth scroll ----------------
+     Same settings as the homepage, so moving between the two does not
+     feel like moving between two different websites. */
+  if (typeof window.Lenis !== "undefined") {
+    var lenis = new Lenis({ duration: 1.05, smoothWheel: true });
+    window.__lenis = lenis;
+    lenis.on("scroll", ScrollTrigger.update);
+    gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
+    gsap.ticker.lagSmoothing(0);
+  }
+
+  /* ---------------- Primitive: arrive ----------------
+     One move, repeated. Identical easing and trigger point to the
+     homepage's arrive(). */
+  gsap.utils.toArray(".reveal").forEach(function (el) {
+    gsap.to(el, {
+      opacity: 1,
+      y: 0,
+      duration: 1.1,
+      ease: "expo.out",
+      scrollTrigger: { trigger: el, start: "top 86%" }
     });
   });
-})();
 
-// Titleblock: fade out when the footer/colophon is in view so the fixed
-// sheet annotation never sits on top of the contact block.
-(function () {
-  var tb = document.querySelector(".titleblock");
-  var foot = document.querySelector(".site-foot");
-  if (!tb || !foot) return;
-  function check() {
-    var r = foot.getBoundingClientRect();
-    var overlap = r.top < window.innerHeight - 40;
-    tb.style.opacity = overlap ? "0" : "";
+  /* ---------------- Primitive: depth ----------------
+     Photographs and renders drift slower than the page, so they read as
+     sitting behind it. Skipped on `.contain` frames, which hold logos and
+     full drawings: those are scaled to fit and must not be cropped. */
+  gsap.utils.toArray(".ph.has-img:not(.contain) img").forEach(function (img) {
+    // Deliberately slight. Most of these frames are product screenshots that
+    // are already cover-cropped, and the scale needed to hide the travel eats
+    // the UI they exist to show. Enough to read as depth, not enough to cost
+    // content.
+    gsap.fromTo(img,
+      { yPercent: -2, scale: 1.05 },
+      {
+        yPercent: 2, scale: 1.05, ease: "none",
+        scrollTrigger: {
+          trigger: img.closest(".ph"),
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 0.8
+        }
+      });
+  });
+
+  /* The case-study hero plate gets a touch more of it. */
+  gsap.utils.toArray(".case-hero .ph.has-img:not(.contain) img").forEach(function (img) {
+    gsap.fromTo(img,
+      { scale: 1.16 },
+      {
+        scale: 1.02, ease: "none",
+        scrollTrigger: { trigger: ".case-hero", start: "top top", end: "bottom top", scrub: 0.8 }
+      });
+  });
+
+  /* ---------------- Primitive: magnetic ----------------
+     Applied by selector rather than by markup, so the inner pages did
+     not need editing to gain it. Pointer devices only. */
+  if (fine) {
+    var MAGNETIC = ".wordmark, .site-nav a, .foot-mail, .foot-links a," +
+                   " .about-links a, .cv-actions a, .link-arrow, .next-proj a," +
+                   " .cv-link a";
+
+    gsap.utils.toArray(MAGNETIC).forEach(function (el) {
+      var pull = 0.32;
+      var radius = 90;
+
+      var xTo = gsap.quickTo(el, "x", { duration: 0.5, ease: "power3" });
+      var yTo = gsap.quickTo(el, "y", { duration: 0.5, ease: "power3" });
+
+      el.addEventListener("pointermove", function (e) {
+        var r = el.getBoundingClientRect();
+        var dx = e.clientX - (r.left + r.width / 2);
+        var dy = e.clientY - (r.top + r.height / 2);
+        var limit = Math.max(radius, r.width * 0.5);
+        xTo(gsap.utils.clamp(-limit, limit, dx) * pull);
+        yTo(gsap.utils.clamp(-radius, radius, dy) * pull);
+      });
+
+      el.addEventListener("pointerleave", function () { xTo(0); yTo(0); });
+    });
   }
-  window.addEventListener("scroll", check, { passive: true });
-  window.addEventListener("resize", check);
-  check();
+
+  /* Late-arriving images change the page height, so re-measure once
+     everything has loaded rather than trusting the first pass. */
+  window.addEventListener("load", function () { ScrollTrigger.refresh(); });
 })();
