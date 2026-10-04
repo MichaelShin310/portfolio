@@ -1042,6 +1042,19 @@ html.motion .reveal {
   .ws-media,
   .ws-media.three { grid-template-columns: 1fr; }
   .ws-media.four { grid-template-columns: repeat(2, 1fr); }
+  /* A row of phone screens swipes sideways instead of stacking three
+     full-height screenshots. Bleeds to the right edge to hint there's more. */
+  .ws-media.phones {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin-right: calc(-1 * var(--pad));
+    padding-right: var(--pad);
+    scrollbar-width: none;
+  }
+  .ws-media.phones::-webkit-scrollbar { display: none; }
+  .ws-media.phones > * { flex: 0 0 72%; scroll-snap-align: start; }
   .stats { grid-template-columns: 1fr; }
   .photo-grid { columns: 2; }
   .about-grid { grid-template-columns: 1fr; }
